@@ -1,31 +1,28 @@
-const API = '/api'   // passe par le proxy Vite
+import { api, ApiError } from './api'
 
-export async function login(login, password) {
-  const res = await fetch(`${API}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',                  // ← envoie/stocke les cookies de session
-    body: JSON.stringify({ login, password }),
-  })
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}))
-    throw new Error(body.message || 'Identifiants incorrects')
+export async function login(identifiant, motDePasse) {
+  try {
+    return await api.post('/auth/login', { login: identifiant, password: motDePasse })
+  } catch (e) {
+    if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
+      throw new Error('Identifiants incorrects')
+    }
+    throw e
   }
-  return res.json()                          // { id, login, idEmploye, roles }
 }
 
 export async function logout() {
-  await fetch(`${API}/auth/logout`, {
-    method: 'POST',
-    credentials: 'include',
-  })
+  try {
+    await api.post('/auth/logout')
+  } catch {
+  }
 }
 
-/** Renvoie l'utilisateur courant ou null s'il n'y a pas de session. */
 export async function getSession() {
-  const res = await fetch(`${API}/auth/session`, { credentials: 'include' })
-  if (!res.ok) return null
-  const data = await res.json()
-  return data.authenticated ? data.user : null
+  try {
+    const data = await api.get('/auth/session')
+    return data?.authenticated ? data.user : null
+  } catch {
+    return null
+  }
 }
