@@ -1,7 +1,10 @@
 <script setup>
 import { ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 
+const route = useRoute()
+const router = useRouter()
 const { login } = useAuth()
 
 const username     = ref('')
@@ -15,7 +18,10 @@ async function onSubmit() {
   loading.value = true
   try {
     await login(username.value, password.value)
-    // La réactivité fait basculer App.vue vers BesoinsView
+    // Retour à la page demandée avant la connexion (?redirect=...), sinon accueil
+    const cible = route.query.redirect
+    const sure = typeof cible === 'string' && cible.startsWith('/') && !cible.startsWith('//')
+    router.push(sure ? cible : '/')
   } catch (e) {
     error.value = e.message || 'Connexion impossible'
   } finally {
