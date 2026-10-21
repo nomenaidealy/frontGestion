@@ -14,6 +14,9 @@ const routes = [
   // P5 – Candidatures, côté public (sans connexion). /offres est déjà pris par P4 (offres côté RH).
   { path: '/emplois', name: 'emplois', component: () => import('@/views/candidatures/OffresPubliques.vue') },
   { path: '/emplois/:id/candidater', name: 'candidater', component: () => import('@/views/candidatures/CandidatureForm.vue'), props: true },
+
+  // P5 – Candidatures reçues (RH)
+  { path: '/candidatures', name: 'candidatures', component: () => import('@/views/candidatures/CandidaturesRecues.vue') },
 ]
 
 export default createRouter({

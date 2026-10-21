@@ -43,3 +43,39 @@ async function deposer(candidature, fichierCv) {
   if (res.status === 413) throw new ErreurFormulaire('Le fichier est trop volumineux.', { cv: 'Le CV est trop volumineux.' }, 413)
   throw new ErreurFormulaire(data?.message ?? data?.error ?? `Erreur ${res.status}`, data?.champs ?? {}, res.status)
 }
+
+// ---------------------------------------------------------------------------
+// Côté RH (connexion + rôle RH) : consultation des candidatures reçues
+// ---------------------------------------------------------------------------
+
+export const candidaturesRhApi = {
+  /** Offres avec le nombre de candidatures (et de nouvelles). */
+  offres: () => http.get('/api/rh/offres-candidatures'),
+  /** Candidatures d'une offre ; etat facultatif (DEPOSEE, PRESELECTIONNER, REFUSE, DESISTE). */
+  candidatures: (idOffre, etat) =>
+    http.get(`/api/rh/offres/${encodeURIComponent(idOffre)}/candidatures${etat ? `?etat=${encodeURIComponent(etat)}` : ''}`),
+  fiche: (id) => http.get(`/api/rh/candidatures/${encodeURIComponent(id)}`),
+  urlPiece: (id, idDocument) => `/api/rh/candidatures/${encodeURIComponent(id)}/pieces/${encodeURIComponent(idDocument)}`,
+}
+
+/** Valeurs de candidatures.etat et leur libellé affiché. */
+export const ETATS_CANDIDATURE = {
+  DEPOSEE: 'Nouvelle',
+  PRESELECTIONNER: 'Présélectionnée',
+  REFUSE: 'Refusée',
+  DESISTE: 'Désistée',
+}
+
+/** Couleur Bootstrap du badge de chaque état. */
+export const BADGE_ETAT = {
+  DEPOSEE: 'bg-primary',
+  PRESELECTIONNER: 'bg-success',
+  REFUSE: 'bg-danger',
+  DESISTE: 'bg-secondary',
+}
+
+export const TYPES_LIGNE_CV = {
+  'EXPERIENCE PRO': 'Expériences professionnelles',
+  EDUCATION: 'Formations',
+  QUALITE: 'Qualités',
+}
