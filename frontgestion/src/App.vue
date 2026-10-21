@@ -1,11 +1,17 @@
-<script setup></script>
-
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <nav class="menu">
+
+    <RouterLink to="/besoins/nouveau">Nouveau besoin</RouterLink>
+    <RouterLink to="/postes/demande">Demander un poste</RouterLink>
+  </nav>
+  <main class="contenu">
+    <RouterView />
+  </main>
 </template>
 
-<style scoped></style>
+<style>
+.menu { display: flex; gap: 16px; padding: 12px 24px; background: #1f2937; }
+.menu a { color: #fff; text-decoration: none; }
+.menu a.router-link-active { font-weight: bold; text-decoration: underline; }
+.contenu { max-width: 720px; margin: 24px auto; padding: 0 16px; font-family: sans-serif; }
+</style>
