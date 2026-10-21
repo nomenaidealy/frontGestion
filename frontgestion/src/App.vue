@@ -20,6 +20,9 @@ const aRole = (r) => user.value?.roles?.includes(r)
     <div class="container-fluid">
       <RouterLink class="navbar-brand" to="/">Gestion RH</RouterLink>
       <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <RouterLink class="nav-link" to="/emplois">Postuler</RouterLink>
+        </li>
         <!-- P4 : offres d'emploi (RH) -->
         <li class="nav-item" v-if="aRole('RH')">
           <RouterLink class="nav-link" to="/offres">Offres d'emploi</RouterLink>
