@@ -11,12 +11,15 @@ export default defineConfig({
     vueDevTools(),
   ],
   server: {
-    port: 5173,
-    // /api/... est transmis à PHP
-    proxy: {
-      '/api': 'http://localhost:8088'
-    }
+  port: 5173,
+  proxy: {
+    '/api': {
+      target: 'http://localhost:8088',
+      changeOrigin: true,
+      rewrite: (path) => path.replace(/^\/api/, ''),
+    },
   },
+},
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
