@@ -5,7 +5,7 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // Back Spring Boot
-const BACK = 'http://localhost:8080'
+const BACK = 'http://localhost:8088'
 
 // https://vite.dev/config/
 export default defineConfig({

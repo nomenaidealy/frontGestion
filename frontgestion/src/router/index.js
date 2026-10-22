@@ -1,4 +1,3 @@
-import { createRouter, createWebHistory } from 'vue-router'
 
 // Chaque membre ajoute ses routes ici.
 // ⚠ Ne pas utiliser de chemins qui commencent par /api, /auth, /uploads : ils partent vers le back (vite.config.js).
