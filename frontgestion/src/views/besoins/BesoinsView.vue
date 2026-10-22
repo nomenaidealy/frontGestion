@@ -3,7 +3,7 @@ import BesoinDetails from '../../components/besoins/BesoinDetails.vue'
 import BesoinList from '../../components/besoins/BesoinList.vue'
 import { useBesoins } from '../../composables/useBesoins'
 
-const { besoins, selectedBesoin, loading, validating, error, success, hasBesoins, canValidate, loadBesoins, selectBesoin, validateSelected } = useBesoins()
+const { besoins, selectedBesoin, loading, validating, error, success, hasBesoins, canValidate, loadBesoins, selectBesoin, validateSelected, refuseSelected } = useBesoins()
 </script>
 
 <template>
@@ -25,7 +25,7 @@ const { besoins, selectedBesoin, loading, validating, error, success, hasBesoins
     <div class="besoins-layout">
       <BesoinList :besoins="besoins" :selected-id="selectedBesoin?.id" @select="selectBesoin" />
       <BesoinDetails :besoin="selectedBesoin" :can-validate="canValidate" :validating="validating"
-        @validate="validateSelected" />
+        @validate="validateSelected" @refuse="refuseSelected" />
     </div>
 
     <div v-if="loading && !hasBesoins" class="text-center text-muted py-4">

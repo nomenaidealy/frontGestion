@@ -10,6 +10,7 @@ export const offresApi = {
   creer: (form) => http.post(BASE, nettoyer(form)),
   apercu: (form) => http.postText(`${BASE}/apercu`, nettoyer(form)),
   publier: (id) => http.post(`${BASE}/${id}/publier`),
+  cloturer: (id) => http.post(`${BASE}/${id}/cloturer`),
 }
 
 // Les champs vides deviennent null (ex. type de contrat facultatif)

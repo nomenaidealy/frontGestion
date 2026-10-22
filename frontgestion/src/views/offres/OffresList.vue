@@ -33,6 +33,20 @@ async function publier(o) {
   }
 }
 
+async function cloturer(o) {
+  if (!window.confirm(`Clôturer l'offre ${o.ref} ? Elle ne recevra plus de candidatures.`)) return
+  try {
+    await offresApi.cloturer(o.id)
+    message.value = `Offre ${o.ref} clôturée`
+    error.value = null
+    await charger()
+  } catch (e) {
+    error.value = e.message
+  }
+}
+
+const MOTIFS = { DATE_LIMITE: 'date limite passée', POSTES_POURVUS: 'postes pourvus', MANUELLE: 'clôture manuelle' }
+
 const badge = (etat) =>
   etat === 'PUBLIEE' ? 'bg-success' : etat === 'BROUILLON' ? 'bg-secondary' : 'bg-dark'
 
@@ -69,11 +83,17 @@ onMounted(charger)
             <td>{{ o.typeContrat ?? '—' }}</td>
             <td>{{ formatDate(o.datePublication) }}</td>
             <td>{{ formatDate(o.dateLimiteCandidature) }}</td>
-            <td><span class="badge" :class="badge(o.etat)">{{ o.etat }}</span></td>
+            <td>
+              <span class="badge" :class="badge(o.etat)">{{ o.etat }}</span>
+              <div v-if="o.motifCloture" class="small text-muted">{{ MOTIFS[o.motifCloture] ?? o.motifCloture }}</div>
+            </td>
             <td class="text-end text-nowrap">
               <a v-if="o.pdfUrl" :href="o.pdfUrl" target="_blank" class="btn btn-outline-secondary btn-sm">PDF</a>
               <button v-if="o.etat === 'BROUILLON'" class="btn btn-success btn-sm ms-1" @click="publier(o)">
                 Publier
+              </button>
+              <button v-if="o.cloturable && o.etat === 'PUBLIEE'" class="btn btn-outline-danger btn-sm ms-1" @click="cloturer(o)">
+                Clôturer
               </button>
             </td>
           </tr>

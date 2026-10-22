@@ -41,6 +41,8 @@ async function request(method, url, body, { asText = false } = {}) {
 
   if (asText) return res.text()
   if (res.status === 204) return null
+  // Réponse vide ou texte (ex. un endpoint qui renvoie void) : pas d'erreur de JSON
+  if (!(res.headers.get('Content-Type') || '').includes('json')) return (await res.text()) || null
   return res.json()
 }
 

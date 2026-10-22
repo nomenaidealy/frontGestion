@@ -12,4 +12,7 @@ export const besoinService = {
   validate(id) {
     return api.post(`/api/besoin/valider?idBesoin=${encodeURIComponent(id)}`)
   },
+  refuse(id) {
+    return api.post(`/api/besoin/refuser?idBesoin=${encodeURIComponent(id)}`)
+  },
 }

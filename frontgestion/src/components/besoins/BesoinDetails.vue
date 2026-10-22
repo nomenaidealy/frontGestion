@@ -1,12 +1,17 @@
 <script setup>
 import BesoinValidationButton from './BesoinValidationButton.vue'
+import { useAuth } from '@/composables/useAuth'
+
+// « Ouvrir le recrutement » : action de la RH, une fois le besoin validé par tout le circuit
+const { currentUser } = useAuth()
+const estRh = () => currentUser.value?.roles?.includes('RH')
 
 defineProps({
   besoin: { type: Object, default: null },
   canValidate: Boolean,
   validating: Boolean,
 })
-defineEmits(['validate'])
+defineEmits(['validate', 'refuse'])
 
 function display(value) {
   return value === null || value === undefined || value === '' ? 'Non renseigne' : value
@@ -27,7 +32,7 @@ function display(value) {
       <div class="detail-field"><span>Budget estime</span><strong>{{ display(besoin.budgetEstime) }}</strong></div>
       <div class="detail-field"><span>Demandeur</span><strong>{{ display(besoin.userLogin) }}</strong></div>
     </div>
-    <div class="details-footer"><span class="muted">La validation declenche l'etape suivante du workflow.</span><BesoinValidationButton :disabled="!canValidate" :loading="validating" @validate="$emit('validate')" /></div>
+    <div class="details-footer"><span class="muted">La validation declenche l'etape suivante du workflow.</span><div class="d-flex gap-2"><RouterLink v-if="estRh() && String(besoin.etatActuel).toUpperCase() === 'OUVERT'" class="btn btn-primary" :to="{ name: 'offre-nouvelle', query: { idBesoin: besoin.id } }">Ouvrir le recrutement</RouterLink><button v-if="canValidate" class="btn btn-outline-danger" :disabled="validating" @click="$emit('refuse')">Refuser</button><BesoinValidationButton :disabled="!canValidate" :loading="validating" @validate="$emit('validate')" /></div></div>
   </section>
   <section v-else class="details-placeholder panel"><div class="empty-icon">⌁</div><h2>Selectionnez une fiche</h2><p>Choisissez un besoin dans la liste pour consulter ses informations.</p></section>
 </template>

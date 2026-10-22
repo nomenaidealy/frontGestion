@@ -13,13 +13,6 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
-  server: {
-  port: 5173,
-  proxy: {
-  '/api':  { target: 'http://localhost:8080', changeOrigin: true, autoRewrite: true },
-  '/auth': { target: 'http://localhost:8080', changeOrigin: true, autoRewrite: true },
-  },
-},
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -27,12 +20,13 @@ export default defineConfig({
   },
   // Le front (5173) transmet ces URL au back (8080) : même origine pour le navigateur,
   // donc le cookie de session JSESSIONID marche et pas besoin de CORS.
+  // (un seul bloc server : avec deux blocs, le second écrasait le premier)
   server: {
+    port: 5173,
     proxy: {
-      '/api': BACK,
-      '/auth': { target : BACK , changeOrgin : true , autoRewrite : true} ,          // login / logout / session (P1)
-      '/uploads': BACK,       // fichiers enregistrés
-      '^/rh/offres/\\d+/pdf': BACK,   // P4 : PDF d'une offre
+      '/api': { target: BACK, changeOrigin: true },
+      '/auth': { target: BACK, changeOrigin: true },   // login / logout / session (P1)
+      '/uploads': { target: BACK, changeOrigin: true }, // fichiers enregistrés
     },
   },
 })

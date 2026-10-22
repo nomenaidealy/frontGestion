@@ -1,5 +1,6 @@
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { besoinApi as api } from '@/api/besoinApi'
 
 const props = defineProps({ id: [String, Number] })
@@ -11,7 +12,8 @@ const enCours = ref(false)
 
 const fichier = ref(null)
 const renouv = reactive({ idTypeNouveau: '', dateFinPrevue: '' })
-const types = ref([])   // CE, CDD, CDI : voir note en bas
+const types = ref([])   // CE, CDD, CDI (GET /api/rh/contrats/types)
+const router = useRouter()
 
 async function charger() {
   try {
@@ -20,7 +22,11 @@ async function charger() {
     erreur.value = e.message
   }
 }
-onMounted(charger)
+onMounted(async () => {
+  await charger()
+  try { types.value = await api.typesContrat() } catch { /* liste vide : renouvellement du même type */ }
+})
+watch(() => props.id, charger)
 
 // Exécute une action, affiche le résultat, met à jour la fiche
 async function agir(action, messageSucces) {
@@ -44,7 +50,7 @@ const annuler = () => {
   if (confirm('Annuler ce contrat ?')) agir(() => api.annulerContrat(props.id), 'Contrat annulé.')
 }
 const signer = async () => {
-  await agir(() => api.signerContrat(props.id), 'Contrat signé. Onboarding démarré.')
+  await agir(() => api.signerContrat(props.id), 'Contrat signé.')
   await charger()
 }
 
@@ -62,7 +68,7 @@ async function renouveler() {
     dateFinPrevue: renouv.dateFinPrevue || null,
   }
   const nouveau = await agir(() => api.renouveler(props.id, payload), 'Nouveau contrat créé.')
-  if (nouveau) window.location.href = `/contrats/${nouveau.id}`
+  if (nouveau) router.push({ name: 'contrat-fiche', params: { id: nouveau.id } })
 }
 
 const statut = computed(() => contrat.value?.statut)
@@ -105,8 +111,13 @@ const formatDate = (d) => (d ? String(d).replace('T', ' ').slice(0, 16) : '-')
             <dd class="col-sm-9">{{ contrat.motifFin || '-' }}</dd>
             <dt class="col-sm-3">Contrat précédent</dt>
             <dd class="col-sm-9">{{ contrat.referencePrecedent || '-' }}</dd>
-            <dt class="col-sm-3">PDF signé</dt>
-            <dd class="col-sm-9">{{ contrat.documentDepose ? 'Déposé' : 'Non déposé' }}</dd>
+            <dt class="col-sm-3">Document</dt>
+            <dd class="col-sm-9">
+              <a v-if="contrat.lienDocument" :href="contrat.lienDocument" target="_blank" rel="noopener">
+                {{ contrat.documentSigne ? 'Copie signée (PDF)' : 'Contrat généré à imprimer (PDF)' }}
+              </a>
+              <span v-else>-</span>
+            </dd>
           </dl>
         </div>
       </div>
@@ -130,13 +141,13 @@ const formatDate = (d) => (d ? String(d).replace('T', ' ').slice(0, 16) : '-')
               </div>
             </div>
             <div class="d-flex gap-2">
-              <button class="btn btn-success" :disabled="enCours || !contrat.documentDepose" @click="signer">
+              <button class="btn btn-success" :disabled="enCours || !contrat.documentSigne" @click="signer">
                 Signer
               </button>
               <button class="btn btn-outline-danger" :disabled="enCours" @click="annuler">Annuler</button>
             </div>
-            <small v-if="!contrat.documentDepose" class="text-muted">
-              Dépose le PDF avant de signer.
+            <small v-if="!contrat.documentSigne" class="text-muted">
+              Imprime le contrat, fais-le signer, puis dépose la copie signée (PDF) avant de signer.
             </small>
           </div>
 

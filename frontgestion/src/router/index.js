@@ -40,16 +40,23 @@ const routes = [
 
   { path: '/postes/proposes', name: 'postes-proposes', component: PostesProposesView },
 
+  // P2 – Contrats (RH)
+  { path: '/contrats/echeances', name: 'contrats-echeances', component: () => import('@/views/contrat/ContratsEcheances.vue') },
+  { path: '/contrats/employe/:idEmploye', name: 'contrats-employe', component: () => import('@/views/contrat/ContratsEmployeView.vue'), props: true },
+  { path: '/contrats/:id(\\d+)', name: 'contrat-fiche', component: () => import('@/views/contrat/ContratFiche.vue'), props: true },
+
+  // P4 – Propositions d'embauche (RH) et réponse du candidat (lien personnel envoyé par la RH, sans connexion)
+  { path: '/propositions', name: 'propositions', component: () => import('@/views/embauche/PropositionsRh.vue') },
+  { path: '/propositions/nouvelle', name: 'proposition-nouvelle', component: () => import('@/views/embauche/PropositionNouvelle.vue') },
+  { path: '/propositions/:id(\\d+)', name: 'proposition-fiche', component: () => import('@/views/embauche/PropositionFiche.vue'), props: true },
+  { path: '/proposition/:jeton', name: 'proposition-reponse', component: () => import('@/views/embauche/PropositionReponse.vue'), props: true, meta: { public: true } },
+
+  // P3 – Personnel : liste et fiche employé
+  { path: '/personnel', name: 'personnel', component: () => import('@/views/personnel/PersonnelListe.vue') },
+  { path: '/personnel/:id(\\d+)', name: 'employe-fiche', component: () => import('@/views/personnel/EmployeFiche.vue'), props: true },
+
   // Toute autre URL → page 404 (à mettre en dernier)
   { path: '/:pathMatch(.*)*', name: 'introuvable', component: NotFoundView },
-
-
-  // P2 – Contrats (RH)
-{ path: '/contrats/echeances', name: 'contrats-echeances', component: () => import('@/views/contrat/ContratsEcheances.vue') },
-{ path: '/contrats/employe/:idEmploye', name: 'contrats-employe',component: () => import('@/views/contrat/ContratsEmployeView.vue'), props: true },
-{ path: '/contrats/:id(\\d+)', name: 'contrat-fiche',component: () => import('@/views/contrat/ContratFiche.vue'), props: true },
-
-
 ]
 
 const router = createRouter({

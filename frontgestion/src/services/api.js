@@ -44,6 +44,12 @@ async function request(path, options = {}) {
   }
 
   if (response.status === 204) return null
+  // Certaines routes répondent en texte (ex. « Besoin validé avec succès. ») : ne pas forcer le JSON
+  const type = response.headers.get('Content-Type') || ''
+  if (!type.includes('json')) {
+    const texte = await response.text()
+    return texte || null
+  }
   return response.json()
 }
 

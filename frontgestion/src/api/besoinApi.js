@@ -30,6 +30,7 @@ export const besoinApi = {
   // ---------- Contrats ----------
   contratsEmploye: (idEmploye) => http.get(`${BASE}/contrats/employe/${idEmploye}`),
   contrat:         (id) => http.get(`${BASE}/contrats/${id}`),
+  typesContrat:    () => http.get(`${BASE}/contrats/types`),
   echeances:       (jours = 30) => http.get(`${BASE}/contrats/echeances?jours=${encodeURIComponent(jours)}`),
   validerContrat:  (id) => http.post(`${BASE}/contrats/${id}/valider`),
   signerContrat:   (id) => http.post(`${BASE}/contrats/${id}/signer`),

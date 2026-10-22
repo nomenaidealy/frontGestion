@@ -8,9 +8,10 @@ export function useAuth() {
   const isAuthenticated = computed(() => currentUser.value !== null)
 
   async function login(login, password) {
-    const user = await authService.login(login, password)
-    currentUser.value = user
-    return user
+    // le back répond { authenticated, user } : on ne garde que l'utilisateur (login, roles…)
+    const res = await authService.login(login, password)
+    currentUser.value = res?.user ?? res
+    return currentUser.value
   }
 
   async function logout() {

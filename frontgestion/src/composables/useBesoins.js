@@ -15,7 +15,8 @@ export function useBesoins() {
   const success = ref('')
 
   const hasBesoins = computed(() => besoins.value.length > 0)
-  const canValidate = computed(() => selectedBesoin.value && !['VALIDE', 'VALIDEE', 'REFUSE', 'REFUSEE'].includes(String(selectedBesoin.value.etatActuel).toUpperCase()))
+  // Seul un besoin EN_ATTENTE attend une décision ; le back vérifie que c'est bien votre étape (RH, Finance, DG)
+  const canValidate = computed(() => String(selectedBesoin.value?.etatActuel ?? '').toUpperCase() === 'EN_ATTENTE')
 
   async function loadBesoins() {
     loading.value = true
@@ -48,7 +49,25 @@ export function useBesoins() {
     success.value = ''
     try {
       await besoinService.validate(selectedBesoin.value.id)
-      success.value = 'Le besoin a ete valide.'
+      success.value = 'Le besoin a été validé : il passe à l\'étape suivante.'
+      await loadBesoins()
+      await selectBesoin(selectedBesoin.value)
+    } catch (requestError) {
+      error.value = requestError.message
+    } finally {
+      validating.value = false
+    }
+  }
+
+  async function refuseSelected() {
+    if (!selectedBesoin.value || !canValidate.value) return
+    if (!window.confirm(`Refuser le besoin ${selectedBesoin.value.reference} ? Il sera annulé.`)) return
+    validating.value = true
+    error.value = ''
+    success.value = ''
+    try {
+      await besoinService.refuse(selectedBesoin.value.id)
+      success.value = 'Le besoin a été refusé.'
       await loadBesoins()
       await selectBesoin(selectedBesoin.value)
     } catch (requestError) {
@@ -60,5 +79,5 @@ export function useBesoins() {
 
   onMounted(loadBesoins)
 
-  return { besoins, selectedBesoin, loading, validating, error, success, hasBesoins, canValidate, loadBesoins, selectBesoin, validateSelected }
+  return { besoins, selectedBesoin, loading, validating, error, success, hasBesoins, canValidate, loadBesoins, selectBesoin, validateSelected, refuseSelected }
 }
