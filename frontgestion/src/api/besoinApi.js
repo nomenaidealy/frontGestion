@@ -3,6 +3,13 @@ import { http } from './http'
 
 const BASE = '/api/rh'
 
+// Les champs vides ('') deviennent null (les tableaux et objets sont gardés tels quels)
+function nettoyer(form) {
+  const f = { ...form }
+  for (const k of Object.keys(f)) if (f[k] === '') f[k] = null
+  return f
+}
+
 export const besoinApi = {
   // ---------- Listes (OptionDto : { id, libelle }) ----------
   metiers:       () => http.get(`${BASE}/metiers`),
@@ -28,16 +35,9 @@ export const besoinApi = {
   signerContrat:   (id) => http.post(`${BASE}/contrats/${id}/signer`),
   annulerContrat:  (id) => http.post(`${BASE}/contrats/${id}/annuler`),
   renouveler:      (id, payload) => http.post(`${BASE}/contrats/${id}/renouveler`, nettoyer(payload)),
-}
-deposerContrat: (id, fichier) => {
-  const fd = new FormData()
-  fd.append('fichier', fichier)
-  return http.post(`${BASE}/contrats/${id}/document`, fd)
-},
-
-// Les champs vides ('') deviennent null (les tableaux et objets sont gardés tels quels)
-function nettoyer(form) {
-  const f = { ...form }
-  for (const k of Object.keys(f)) if (f[k] === '') f[k] = null
-  return f
+  deposerContrat:  (id, fichier) => {
+    const fd = new FormData()
+    fd.append('fichier', fichier)
+    return http.post(`${BASE}/contrats/${id}/document`, fd)
+  },
 }
