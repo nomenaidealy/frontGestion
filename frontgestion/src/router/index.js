@@ -21,6 +21,11 @@ const routes = [
   // P2 – Besoins et postes
 { path: '/besoins/nouveau', name: 'besoin-nouveau', component: () => import('@/views/besoins/BesoinFormView.vue') },
 { path: '/postes/demande', name: 'poste-demande', component: () => import('@/views/besoins/PosteDemandeView.vue') },
+
+  // P2 – Contrats (RH)
+{ path: '/contrats/echeances', name: 'contrats-echeances', component: () => import('@/views/contrat/ContratsEcheances.vue') },
+{ path: '/contrats/employe/:idEmploye', name: 'contrats-employe',component: () => import('@/views/contrat/ContratsEmployeView.vue'), props: true },
+{ path: '/contrats/:id(\\d+)', name: 'contrat-fiche',component: () => import('@/views/contrat/ContratFiche.vue'), props: true },
 ]
 
 export default createRouter({

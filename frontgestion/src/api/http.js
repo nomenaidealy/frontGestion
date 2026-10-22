@@ -48,3 +48,11 @@ export async function getSession() {
   const data = await res.json()
   return data.authenticated ? data.user : null
 }
+
+const estFormData = body instanceof FormData
+const res = await fetch(url, {
+  method,
+  credentials: 'same-origin',
+  headers: body !== undefined && !estFormData ? { 'Content-Type': 'application/json' } : {},
+  body: body === undefined ? undefined : (estFormData ? body : JSON.stringify(body)),
+})

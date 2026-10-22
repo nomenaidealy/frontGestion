@@ -29,6 +29,11 @@ export const besoinApi = {
   annulerContrat:  (id) => http.post(`${BASE}/contrats/${id}/annuler`),
   renouveler:      (id, payload) => http.post(`${BASE}/contrats/${id}/renouveler`, nettoyer(payload)),
 }
+deposerContrat: (id, fichier) => {
+  const fd = new FormData()
+  fd.append('fichier', fichier)
+  return http.post(`${BASE}/contrats/${id}/document`, fd)
+},
 
 // Les champs vides ('') deviennent null (les tableaux et objets sont gardés tels quels)
 function nettoyer(form) {
