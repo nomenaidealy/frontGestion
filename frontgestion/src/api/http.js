@@ -22,12 +22,17 @@ async function request(method, url, body, { asText = false } = {}) {
 
   if (!res.ok) {
     let message = `Erreur ${res.status}`
+    let champs = {}
     try {
       const data = await res.json()
       if (data.error) message = data.error
       else if (data.message) message = data.message
+      if (data.champs) champs = data.champs
     } catch { /* corps non JSON */ }
-    throw new Error(message)
+    const erreur = new Error(message)
+    erreur.status = res.status // ex. 403 (droits), 409 (action impossible dans l'état actuel)
+    erreur.champs = champs     // erreurs par champ renvoyées par le back, ex. { commentaire: '…' }
+    throw erreur
   }
 
   if (asText) return res.text()
@@ -39,6 +44,8 @@ export const http = {
   get: (url) => request('GET', url),
   post: (url, body) => request('POST', url, body),
   postText: (url, body) => request('POST', url, body, { asText: true }),
+  put: (url, body) => request('PUT', url, body),
+  del: (url) => request('DELETE', url),
 }
 
 /** Utilisateur connecté (endpoint de P1), ou null. */

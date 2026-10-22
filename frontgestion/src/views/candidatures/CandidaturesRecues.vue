@@ -7,6 +7,10 @@ import { formatDate } from '@/views/offres/format'
 import ListeOffresCandidatures from '@/components/candidatures/ListeOffresCandidatures.vue'
 import TableCandidatures from '@/components/candidatures/TableCandidatures.vue'
 import DossierCandidat from '@/components/candidatures/DossierCandidat.vue'
+import ActionsSelection from '@/components/candidatures/ActionsSelection.vue'
+import HistoriqueCandidature from '@/components/candidatures/HistoriqueCandidature.vue'
+import AlerteConnexion from '@/components/candidatures/AlerteConnexion.vue'
+import { selectionApi } from '@/api/selection'
 
 const route = useRoute()
 const router = useRouter()
@@ -14,6 +18,8 @@ const router = useRouter()
 const offres = ref([])
 const candidatures = ref([])
 const fiche = ref(null)
+const selection = ref(null)    // sprint 2 : évaluations, historique, actions
+const errorSelection = ref(null)
 const chargement = ref(true)
 const chargementListe = ref(false)
 const nonConnecte = ref(false)
@@ -52,17 +58,37 @@ async function chargerCandidatures() {
   }
 }
 
+/** La sélection ne doit pas empêcher d'afficher le dossier : en cas d'erreur, on prévient seulement. */
+function sansSelection(e) {
+  errorSelection.value = e.message
+  return null
+}
+
 async function chargerFiche() {
   fiche.value = null
+  selection.value = null
+  errorSelection.value = null
   errorFiche.value = null
   if (!idCandidature.value) return
   try {
-    fiche.value = await api.fiche(idCandidature.value)
+    const [f, s] = await Promise.all([api.fiche(idCandidature.value), selectionApi.dossier(idCandidature.value).catch(sansSelection)])
+    fiche.value = f
+    selection.value = s
     await nextTick()
     panneauFiche.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   } catch (e) {
     errorFiche.value = e.message
   }
+}
+
+/** Après une présélection, un refus ou un résultat : dossier, tableau et compteurs à jour. */
+async function selectionChangee(nouvelle) {
+  selection.value = nouvelle
+  fiche.value = { ...fiche.value, etat: nouvelle.etat }
+  await chargerCandidatures()
+  try {
+    offres.value = await api.offres()
+  } catch { /* les compteurs se mettront à jour au prochain chargement */ }
 }
 
 function choisirOffre(id) {
@@ -105,10 +131,7 @@ onMounted(async () => {
 
     <div v-if="chargement" class="text-muted">Chargement…</div>
 
-    <div v-else-if="nonConnecte" class="alert alert-warning d-flex align-items-center justify-content-between">
-      <span>Vous devez être connecté pour consulter les candidatures.</span>
-      <a href="/auth/login" class="btn btn-primary btn-sm">Se connecter</a>
-    </div>
+    <AlerteConnexion v-else-if="nonConnecte" message="Vous devez être connecté pour consulter les candidatures." />
 
     <div v-else-if="error" class="alert alert-danger">{{ error }}</div>
 
@@ -143,7 +166,16 @@ onMounted(async () => {
 
         <div ref="panneauFiche" style="scroll-margin-top: 16px">
           <div v-if="errorFiche" class="alert alert-danger">{{ errorFiche }}</div>
-          <DossierCandidat v-else-if="fiche" :fiche="fiche" @ouvrir-autre="ouvrirAutre" />
+          <DossierCandidat v-else-if="fiche" :fiche="fiche" @ouvrir-autre="ouvrirAutre">
+            <template v-if="selection && (selection.peutPreselectionner || selection.peutRefuser)" #actions>
+              <ActionsSelection :id-candidature="fiche.id" :selection="selection" @change="selectionChangee" />
+            </template>
+            <div v-if="errorSelection" class="alert alert-warning small mt-3 mb-0">Sélection indisponible : {{ errorSelection }}</div>
+            <template v-if="selection">
+              <hr>
+              <HistoriqueCandidature :historique="selection.historique" />
+            </template>
+          </DossierCandidat>
         </div>
       </div>
     </div>

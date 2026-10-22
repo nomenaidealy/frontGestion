@@ -51,7 +51,7 @@ async function deposer(candidature, fichierCv) {
 export const candidaturesRhApi = {
   /** Offres avec le nombre de candidatures (et de nouvelles). */
   offres: () => http.get('/api/rh/offres-candidatures'),
-  /** Candidatures d'une offre ; etat facultatif (DEPOSEE, PRESELECTIONNER, REFUSE, DESISTE). */
+  /** Candidatures d'une offre ; etat facultatif (DEPOSEE, PRESELECTIONNER, REFUSE, DESISTE, RETENUE). */
   candidatures: (idOffre, etat) =>
     http.get(`/api/rh/offres/${encodeURIComponent(idOffre)}/candidatures${etat ? `?etat=${encodeURIComponent(etat)}` : ''}`),
   fiche: (id) => http.get(`/api/rh/candidatures/${encodeURIComponent(id)}`),
@@ -64,14 +64,16 @@ export const ETATS_CANDIDATURE = {
   PRESELECTIONNER: 'Présélectionnée',
   REFUSE: 'Refusée',
   DESISTE: 'Désistée',
+  RETENUE: 'Retenue',
 }
 
 /** Couleur Bootstrap du badge de chaque état. */
 export const BADGE_ETAT = {
   DEPOSEE: 'bg-primary',
-  PRESELECTIONNER: 'bg-success',
+  PRESELECTIONNER: 'bg-info text-dark',
   REFUSE: 'bg-danger',
   DESISTE: 'bg-secondary',
+  RETENUE: 'bg-success',
 }
 
 export const TYPES_LIGNE_CV = {

@@ -12,8 +12,9 @@ const routes = [
   { path: '/offres/nouvelle', name: 'offre-nouvelle', component: () => import('@/views/offres/OffreForm.vue') },
 
   // P5 – Candidatures, côté public (sans connexion). /offres est déjà pris par P4 (offres côté RH).
-  { path: '/emplois', name: 'emplois', component: () => import('@/views/candidatures/OffresPubliques.vue') },
-  { path: '/emplois/:id/candidater', name: 'candidater', component: () => import('@/views/candidatures/CandidatureForm.vue'), props: true },
+  // meta.public : pages sans connexion, à laisser passer par la garde du routeur prévue par P1.
+  { path: '/emplois', name: 'emplois', component: () => import('@/views/candidatures/OffresPubliques.vue'), meta: { public: true } },
+  { path: '/emplois/:id/candidater', name: 'candidater', component: () => import('@/views/candidatures/CandidatureForm.vue'), props: true, meta: { public: true } },
 
   // P5 – Candidatures reçues (RH)
   { path: '/candidatures', name: 'candidatures', component: () => import('@/views/candidatures/CandidaturesRecues.vue') },
