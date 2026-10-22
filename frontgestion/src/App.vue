@@ -32,6 +32,10 @@ const aRole = (r) => user.value?.roles?.includes(r)
         <li class="nav-item" v-if="aRole('RH')">
           <RouterLink class="nav-link" to="/candidatures">Candidatures</RouterLink>
         </li>
+        <!-- Lien vers mes évaluations -->
+        <li class="nav-item" v-if="user">
+          <RouterLink class="nav-link" to="/mes-evaluations">Mes évaluations</RouterLink>
+        </li>
       </ul>
       <div class="d-flex align-items-center gap-3">
         <template v-if="user">
