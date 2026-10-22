@@ -44,3 +44,17 @@ export const STATUTS_EVALUATION = {
 
 /** 12.5 -> "12,5" */
 export const formatScore = (n) => (n === null || n === undefined ? '—' : Number(n).toLocaleString('fr-FR'))
+
+// --- Niveaux de sélection (étape 10) ---
+Object.assign(selectionApi, {
+  /** idOffre facultatif : sans lui, niveaux communs. Réponse : { idOffreEmploi, personnalises, niveaux } */
+  niveaux: (idOffre) => http.get(`/api/rh/niveaux-selection${idOffre ? `?idOffre=${id(idOffre)}` : ''}`),
+  /** { ordre, typeEvaluation, scoreMin, idOffreEmploi } */
+  creerNiveau: (niveau) => http.post('/api/rh/niveaux-selection', niveau),
+  modifierNiveau: (idNiveau, niveau) => http.put(`/api/rh/niveaux-selection/${id(idNiveau)}`, niveau),
+  supprimerNiveau: (idNiveau) => http.del(`/api/rh/niveaux-selection/${id(idNiveau)}`),
+  /** Copie les niveaux communs dans l'offre, pour les adapter. */
+  personnaliser: (idOffre) => http.post(`/api/rh/offres/${id(idOffre)}/niveaux-selection`),
+  /** Supprime les niveaux propres à l'offre : elle reprend les niveaux communs. */
+  reprendreCommuns: (idOffre) => http.del(`/api/rh/offres/${id(idOffre)}/niveaux-selection`),
+})

@@ -134,8 +134,15 @@ onMounted(async () => {
 
 <template>
   <div class="container-fluid px-4" style="max-width: 1300px">
-    <h4 class="mb-1">Candidatures reçues</h4>
-    <p class="text-muted">Consultez les dossiers déposés pour chaque offre d'emploi.</p>
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+      <div>
+        <h4 class="mb-1">Candidatures reçues</h4>
+        <p class="text-muted">Consultez les dossiers déposés pour chaque offre d'emploi.</p>
+      </div>
+      <RouterLink :to="{ name: 'niveaux-selection', query: idOffre ? { offre: idOffre } : {} }" class="btn btn-outline-secondary btn-sm">
+        Niveaux de sélection
+      </RouterLink>
+    </div>
 
     <div v-if="chargement" class="text-muted">Chargement…</div>
 

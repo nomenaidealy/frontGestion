@@ -18,6 +18,7 @@ const routes = [
 
   // P5 – Candidatures reçues (RH)
   { path: '/candidatures', name: 'candidatures', component: () => import('@/views/candidatures/CandidaturesRecues.vue') },
+  { path: '/candidatures/niveaux', name: 'niveaux-selection', component: () => import('@/views/candidatures/NiveauxSelection.vue') },
 ]
 
 export default createRouter({
