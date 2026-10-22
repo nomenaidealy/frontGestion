@@ -17,6 +17,10 @@ const routes = [
 
   // P5 – Candidatures reçues (RH)
   { path: '/candidatures', name: 'candidatures', component: () => import('@/views/candidatures/CandidaturesRecues.vue') },
+
+  // P2 – Besoins et postes
+{ path: '/besoins/nouveau', name: 'besoin-nouveau', component: () => import('@/views/besoins/BesoinFormView.vue') },
+{ path: '/postes/demande', name: 'poste-demande', component: () => import('@/views/besoins/PosteDemandeView.vue') },
 ]
 
 export default createRouter({
