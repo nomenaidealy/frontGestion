@@ -118,8 +118,9 @@ async function envoyer() {
     succes.value = `Besoin ${b.reference} enregistré (${b.effectif} personne(s)) : ${b.poste}.`
     reinitialiser()
   } catch (e) {
-    erreur.value = e.response?.data?.erreur || "Erreur lors de l'enregistrement du besoin."
-  } finally {
+  console.error(e)
+  erreur.value = e.response?.data?.message || e.message
+} finally {
     envoi.value = false
   }
 }

@@ -48,6 +48,8 @@ const routes = [
 { path: '/contrats/echeances', name: 'contrats-echeances', component: () => import('@/views/contrat/ContratsEcheances.vue') },
 { path: '/contrats/employe/:idEmploye', name: 'contrats-employe',component: () => import('@/views/contrat/ContratsEmployeView.vue'), props: true },
 { path: '/contrats/:id(\\d+)', name: 'contrat-fiche',component: () => import('@/views/contrat/ContratFiche.vue'), props: true },
+
+
 ]
 
 const router = createRouter({

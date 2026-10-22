@@ -82,8 +82,9 @@ async function envoyer() {
     succes.value = `Poste ${poste.code} créé avec l'état ${poste.etat}. En attente de validation par le DG.`
     reinitialiser()
     metiers.value = await api.metiers()              // le nouveau métier apparaît dans la liste
-  } catch (e) {
-    erreur.value = e.response?.data?.erreur || "Erreur lors de l'envoi de la demande."
+ } catch (e) {
+    console.error(e)
+    erreur.value = e.response?.data?.message || e.message
   } finally {
     envoi.value = false
   }

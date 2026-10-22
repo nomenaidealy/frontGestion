@@ -3,17 +3,21 @@
 
 export class NonConnecteError extends Error {
   constructor() {
-    super('Vous n\'êtes pas connecté')
+    super("Vous n'êtes pas connecté")
     this.name = 'NonConnecteError'
   }
 }
 
 async function request(method, url, body, { asText = false } = {}) {
+  // Un FormData (upload de fichier) part tel quel : le navigateur ajoute lui-même
+  // "multipart/form-data; boundary=...". Le reste est envoyé en JSON.
+  const estFormData = body instanceof FormData
+
   const res = await fetch(url, {
     method,
     credentials: 'same-origin',
-    headers: body !== undefined ? { 'Content-Type': 'application/json' } : {},
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    headers: body !== undefined && !estFormData ? { 'Content-Type': 'application/json' } : {},
+    body: body === undefined ? undefined : (estFormData ? body : JSON.stringify(body)),
   })
 
   // Non connecté : l'AuthInterceptor du back redirige vers la page de login HTML
@@ -55,11 +59,3 @@ export async function getSession() {
   const data = await res.json()
   return data.authenticated ? data.user : null
 }
-
-const estFormData = body instanceof FormData
-const res = await fetch(url, {
-  method,
-  credentials: 'same-origin',
-  headers: body !== undefined && !estFormData ? { 'Content-Type': 'application/json' } : {},
-  body: body === undefined ? undefined : (estFormData ? body : JSON.stringify(body)),
-})
