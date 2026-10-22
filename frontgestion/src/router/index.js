@@ -41,7 +41,7 @@ const routes = [
   { path: '/postes/proposes', name: 'postes-proposes', component: PostesProposesView },
 
   // Toute autre URL → page 404 (à mettre en dernier)
-  { path: '/:pathMatch(.*)*', name: 'introuvable', component: NotFoundView }
+  { path: '/:pathMatch(.*)*', name: 'introuvable', component: NotFoundView },
 
 
   // P2 – Contrats (RH)
