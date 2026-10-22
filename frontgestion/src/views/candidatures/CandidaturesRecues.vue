@@ -9,6 +9,7 @@ import TableCandidatures from '@/components/candidatures/TableCandidatures.vue'
 import DossierCandidat from '@/components/candidatures/DossierCandidat.vue'
 import ActionsSelection from '@/components/candidatures/ActionsSelection.vue'
 import HistoriqueCandidature from '@/components/candidatures/HistoriqueCandidature.vue'
+import SuiviEvaluations from '@/components/candidatures/SuiviEvaluations.vue'
 import AlerteConnexion from '@/components/candidatures/AlerteConnexion.vue'
 import { selectionApi } from '@/api/selection'
 
@@ -20,6 +21,7 @@ const candidatures = ref([])
 const fiche = ref(null)
 const selection = ref(null)    // sprint 2 : évaluations, historique, actions
 const errorSelection = ref(null)
+const postes = ref([])         // postes responsables proposés à la planification
 const chargement = ref(true)
 const chargementListe = ref(false)
 const nonConnecte = ref(false)
@@ -74,6 +76,7 @@ async function chargerFiche() {
     const [f, s] = await Promise.all([api.fiche(idCandidature.value), selectionApi.dossier(idCandidature.value).catch(sansSelection)])
     fiche.value = f
     selection.value = s
+    if (s?.evaluations.length && !postes.value.length) postes.value = await selectionApi.postes()
     await nextTick()
     panneauFiche.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   } catch (e) {
@@ -83,6 +86,11 @@ async function chargerFiche() {
 
 /** Après une présélection, un refus ou un résultat : dossier, tableau et compteurs à jour. */
 async function selectionChangee(nouvelle) {
+  if (nouvelle.evaluations.length && !postes.value.length) {
+    try {
+      postes.value = await selectionApi.postes()
+    } catch { /* la planification affichera une liste vide */ }
+  }
   selection.value = nouvelle
   fiche.value = { ...fiche.value, etat: nouvelle.etat }
   await chargerCandidatures()
@@ -172,6 +180,10 @@ onMounted(async () => {
             </template>
             <div v-if="errorSelection" class="alert alert-warning small mt-3 mb-0">Sélection indisponible : {{ errorSelection }}</div>
             <template v-if="selection">
+              <template v-if="selection.evaluations.length">
+                <hr>
+                <SuiviEvaluations :evaluations="selection.evaluations" :postes="postes" @change="selectionChangee" />
+              </template>
               <hr>
               <HistoriqueCandidature :historique="selection.historique" />
             </template>
