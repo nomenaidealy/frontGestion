@@ -13,6 +13,13 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
+  server: {
+  port: 5173,
+  proxy: {
+  '/api':  { target: 'http://localhost:8088', changeOrigin: true, autoRewrite: true },
+  '/auth': { target: 'http://localhost:8088', changeOrigin: true, autoRewrite: true },
+  },
+},
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

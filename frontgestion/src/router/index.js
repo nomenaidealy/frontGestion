@@ -2,6 +2,14 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 // Chaque membre ajoute ses routes ici.
 // ⚠ Ne pas utiliser de chemins qui commencent par /api, /auth, /uploads : ils partent vers le back (vite.config.js).
+// Le routeur associe une URL à une vue (un composant « page »).
+import { createRouter, createWebHistory } from 'vue-router'
+import { useAuth } from '../composables/useAuth'
+import LoginView from '../components/LoginView.vue'
+import BesoinsView from '../views/besoins/BesoinsView.vue'
+import PostesProposesView from '../views/PostesProposesView.vue'
+import NotFoundView from '../views/NotFoundView.vue'
+
 const routes = [
   { path: '/', name: 'home', component: () => import('@/views/HomeView.vue') },
 
@@ -22,9 +30,33 @@ const routes = [
 
   // P5 – Espace évaluateur (tout utilisateur connecté)
   { path: '/mes-evaluations', name: 'mes-evaluations', component: () => import('@/views/candidatures/MesEvaluations.vue') },
+  // meta.public : accessible sans être connecté
+  { path: '/login', name: 'login', component: LoginView, meta: { public: true } },
+
+  { path: '/', name: 'besoins', component: BesoinsView },
+
+  { path: '/postes/proposes', name: 'postes-proposes', component: PostesProposesView },
+
+  // Toute autre URL → page 404 (à mettre en dernier)
+  { path: '/:pathMatch(.*)*', name: 'introuvable', component: NotFoundView }
 ]
 
-export default createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes,
+const router = createRouter({
+  history: createWebHistory(),
+  routes
 })
+
+router.beforeEach(async (to) => {
+  const { isAuthenticated, initialized, loadSession } = useAuth()
+
+  if (!initialized.value) await loadSession()
+
+  if (!to.meta.public && !isAuthenticated.value) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+  if (to.name === 'login' && isAuthenticated.value) {
+    return { path: '/' }
+  }
+})
+
+export default router
