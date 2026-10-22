@@ -5,7 +5,7 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // Back Spring Boot
-const BACK = 'http://localhost:8080'
+const BACK = 'http://localhost:8088'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -13,6 +13,13 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
+  server: {
+  port: 5173,
+  proxy: {
+  '/api':  { target: 'http://localhost:8088', changeOrigin: true, autoRewrite: true },
+  '/auth': { target: 'http://localhost:8088', changeOrigin: true, autoRewrite: true },
+  },
+},
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

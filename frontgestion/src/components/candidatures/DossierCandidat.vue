@@ -37,6 +37,10 @@ function periode(l) {
       </div>
       <BadgeEtat :etat="fiche.etat" />
     </div>
+    <!-- Emplacement pour les actions de la RH (sprint 2 : présélection, refus) -->
+    <div v-if="$slots.actions" class="card-body border-bottom pb-0">
+      <slot name="actions" />
+    </div>
     <div class="card-body">
       <dl class="row mb-0">
         <dt class="col-sm-3">Email</dt>
@@ -84,6 +88,9 @@ function periode(l) {
           </li>
         </ul>
       </template>
+
+      <!-- Sections ajoutées par la page (sprint 2 : évaluations, historique) -->
+      <slot />
     </div>
   </div>
 </template>
