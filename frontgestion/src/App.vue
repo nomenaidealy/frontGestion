@@ -37,10 +37,10 @@ const aRole = (r) => user.value?.roles?.includes(r)
         </li>
 
         <!-- P2 : expression de besoin (Manager) et demande de poste -->
-        <li class="nav-item" v-if="aRole('Manager') || aRole('RH')">
+        <li class="nav-item" v-if="aRole('DG') || aRole('RH')">
           <RouterLink class="nav-link" to="/besoins/nouveau">Nouveau besoin</RouterLink>
         </li>
-        <li class="nav-item" v-if="aRole('Manager') || aRole('RH')">
+        <li class="nav-item" v-if="aRole('DG') || aRole('RH')">
           <RouterLink class="nav-link" to="/postes/demande">Demander un poste</RouterLink>
         </li>
 
