@@ -1,8 +1,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import api from '../api/rh'
-import SelectField from '../components/SelectField.vue'
-import AlertMessage from '../components/AlertMessage.vue'
+import { besoinApi as api } from '@/api/besoinApi'
+import SelectField from '@/components/besoins/SelectField.vue'
+import AlertMessage from '@/components/besoins/AlertMessage.vue'
 
 // Listes des menus déroulants (OptionDto : { id, libelle })
 const metiers = ref([])

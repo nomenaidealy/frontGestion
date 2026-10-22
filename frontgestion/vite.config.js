@@ -30,7 +30,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': BACK,
-      '/auth': BACK,          // login / logout / session (P1)
+      '/auth': { target : BACK , changeOrgin : true , autoRewrite : true} ,          // login / logout / session (P1)
       '/uploads': BACK,       // fichiers enregistrés
       '^/rh/offres/\\d+/pdf': BACK,   // P4 : PDF d'une offre
     },

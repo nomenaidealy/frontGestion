@@ -1,8 +1,9 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
-import api from '../api/rh'
-import SelectField from '../components/SelectField.vue'
-import AlertMessage from '../components/AlertMessage.vue'
+import { besoinApi as api } from '@/api/besoinApi'
+import SelectField from '@/components/besoins/SelectField.vue'
+import AlertMessage from '@/components/besoins/AlertMessage.vue'
+
 
 const types = [
   { id: 'CREATION', libelle: 'Création de poste' },
