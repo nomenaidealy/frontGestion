@@ -19,6 +19,9 @@ const routes = [
   // P5 – Candidatures reçues (RH)
   { path: '/candidatures', name: 'candidatures', component: () => import('@/views/candidatures/CandidaturesRecues.vue') },
   { path: '/candidatures/niveaux', name: 'niveaux-selection', component: () => import('@/views/candidatures/NiveauxSelection.vue') },
+
+  // P5 – Espace évaluateur (tout utilisateur connecté)
+  { path: '/mes-evaluations', name: 'mes-evaluations', component: () => import('@/views/candidatures/MesEvaluations.vue') },
 ]
 
 export default createRouter({

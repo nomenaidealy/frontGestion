@@ -58,3 +58,9 @@ Object.assign(selectionApi, {
   /** Supprime les niveaux propres à l'offre : elle reprend les niveaux communs. */
   reprendreCommuns: (idOffre) => http.del(`/api/rh/offres/${id(idOffre)}/niveaux-selection`),
 })
+
+// --- Espace évaluateur (étape 11) ---
+Object.assign(selectionApi, {
+  /** { relieAEmploye, evaluations: [{ id, ordre, typeEvaluation, scoreMin, datePrevue, libelle, posteResponsable, idCandidature, candidat, referenceOffre, aSaisir }] } */
+  mesEvaluations: () => http.get('/api/selection/mes-evaluations'),
+})
