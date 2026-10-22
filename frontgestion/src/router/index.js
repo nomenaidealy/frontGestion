@@ -43,6 +43,11 @@ const routes = [
   // Toute autre URL → page 404 (à mettre en dernier)
   { path: '/:pathMatch(.*)*', name: 'introuvable', component: NotFoundView }
 
+
+  // P2 – Contrats (RH)
+{ path: '/contrats/echeances', name: 'contrats-echeances', component: () => import('@/views/contrat/ContratsEcheances.vue') },
+{ path: '/contrats/employe/:idEmploye', name: 'contrats-employe',component: () => import('@/views/contrat/ContratsEmployeView.vue'), props: true },
+{ path: '/contrats/:id(\\d+)', name: 'contrat-fiche',component: () => import('@/views/contrat/ContratFiche.vue'), props: true },
 ]
 
 const router = createRouter({
