@@ -17,6 +17,11 @@ const error = ref(null)
 const envoi = ref(false)
 
 onMounted(async () => {
+  // une offre part toujours d'un besoin ouvert : sans besoin choisi, on affiche la liste des besoins à publier
+  if (!/^\d+$/.test(String(route.query.idBesoin ?? ''))) {
+    router.replace('/offres/besoins')
+    return
+  }
   try {
     const data = await offresApi.nouvelle(route.query.idBesoin)
     besoin.value = data.besoin
