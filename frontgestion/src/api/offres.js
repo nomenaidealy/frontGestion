@@ -6,7 +6,7 @@ const BASE = '/api/rh/offres'
 export const offresApi = {
   liste: () => http.get(BASE),
   besoinsOuverts: () => http.get(`${BASE}/besoins`),
-  nouvelle: (idBesoin) => http.get(`${BASE}/nouvelle?idBesoin=${encodeURIComponent(idBesoin)}`),
+  nouvelle: (idBesoin, idPoste) => http.get(`${BASE}/nouvelle?idBesoin=${encodeURIComponent(idBesoin)}${idPoste ? `&idPoste=${encodeURIComponent(idPoste)}` : ''}`),
   creer: (form) => http.post(BASE, nettoyer(form)),
   apercu: (form) => http.postText(`${BASE}/apercu`, nettoyer(form)),
   publier: (id) => http.post(`${BASE}/${id}/publier`),

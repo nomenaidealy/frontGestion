@@ -8,6 +8,8 @@ import FormResultat from './FormResultat.vue'
 defineProps({
   evaluations: { type: Array, required: true },
   postes: { type: Array, default: () => [] },
+  // postes de l'utilisateur : seul le poste responsable (ou son délégué) saisit le résultat
+  mesPostes: { type: Array, default: () => [] },
 })
 // change(dossier) : une évaluation a été planifiée ou notée
 const emit = defineEmits(['change'])
@@ -52,10 +54,13 @@ function enregistre(dossier) {
                     class="btn btn-outline-secondary btn-sm" @click="ouvert = { id: e.id, type: 'planifier' }">
               {{ e.datePrevue ? 'Replanifier' : 'Planifier' }}
             </button>
-            <button v-if="e.statut === 'A_FAIRE'" type="button" class="btn btn-primary btn-sm"
+            <button v-if="e.statut === 'A_FAIRE' && mesPostes.includes(e.idPosteResponsable)" type="button" class="btn btn-primary btn-sm"
                     @click="ouvert = { id: e.id, type: 'resultat' }">
               Saisir le résultat
             </button>
+            <span v-else-if="e.statut === 'A_FAIRE'" class="small text-muted">
+              {{ e.idPosteResponsable ? `Résultat saisi par : ${e.posteResponsable}` : 'À planifier avant la saisie' }}
+            </span>
           </div>
         </div>
         <FormPlanification v-if="estOuvert(e, 'planifier')" :evaluation="e" :postes="postes"

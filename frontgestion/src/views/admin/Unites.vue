@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import { organisationApi } from '@/api/organisation'
+import { useAuth } from '@/composables/useAuth'
 import { useToast } from '@/composables/useToast'
 import { ariaryCourt, TYPES_UNITE } from '@/utils/format'
 import PageHeader from '@/components/ui/PageHeader.vue'
@@ -9,6 +10,8 @@ import Modal from '@/components/ui/Modal.vue'
 import Icon from '@/components/ui/Icon.vue'
 
 const toast = useToast()
+const { a } = useAuth()
+const modifiable = a('DG')   // la structure de l'organisation est décidée par le DG
 const unites = ref(null)
 const postesUnite = ref([])
 const edition = ref(null)
@@ -46,8 +49,9 @@ async function supprimer() {
 <template>
   <PageHeader titre="Unités organisationnelles" sous-titre="Directions, départements, services et sections. Une unité ne dépend jamais d'une unité de rang inférieur.">
     <RouterLink to="/organigramme" class="btn btn-light">Voir l'organigramme</RouterLink>
-    <button type="button" class="btn btn-primary" @click="ouvrir(null)"><Icon name="plus" /> Créer une unité</button>
+    <button v-if="modifiable" type="button" class="btn btn-primary" @click="ouvrir(null)"><Icon name="plus" /> Créer une unité</button>
   </PageHeader>
+  <div v-if="!modifiable" class="alert alert-info">Consultation seule : la création et la modification des unités sont réservées au Directeur général.</div>
   <section class="panel">
     <Chargement v-if="unites === null" />
     <div v-else class="table-responsive">
@@ -62,8 +66,10 @@ async function supprimer() {
             <td class="num">{{ u.postes }}<span class="cell-sub">{{ u.vacants }} vacant(s)</span></td>
             <td class="num">{{ u.budget ? ariaryCourt(u.budget) : '—' }}</td>
             <td class="text-end nowrap">
-              <button type="button" class="btn btn-sm btn-light" @click="ouvrir(u)">Modifier</button>
-              <button type="button" class="btn btn-sm btn-link text-danger" @click="aSupprimer = u">Supprimer</button>
+              <template v-if="modifiable">
+                <button type="button" class="btn btn-sm btn-light" @click="ouvrir(u)">Modifier</button>
+                <button type="button" class="btn btn-sm btn-link text-danger" @click="aSupprimer = u">Supprimer</button>
+              </template>
             </td>
           </tr>
         </tbody>

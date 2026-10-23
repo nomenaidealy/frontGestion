@@ -4,6 +4,8 @@ import { query } from './besoins'
 
 export const organisationApi = {
   unites: () => http.get('/api/organisation/unites'),
+  /** Unités pour lesquelles l'utilisateur peut exprimer un besoin ou demander un poste (manager : son unité et ses sous-unités) */
+  unitesDemandables: () => http.get('/api/organisation/unites/demandables'),
   organigramme: () => http.get('/api/organisation/organigramme'),
   creerUnite: (u) => http.post('/api/organisation/unites', u),
   modifierUnite: (id, u) => http.put(`/api/organisation/unites/${id}`, u),

@@ -41,8 +41,8 @@ const effectif = computed(() => form.typeBesoin === 'REMPLACEMENT'
 
 onMounted(async () => {
   const [u, m, me, c, e, s, ci, acc] = await Promise.all([
-    organisationApi.unites(), besoinsApi.motifs(), besoinsApi.metiers(), besoinsApi.categories(), besoinsApi.echelons(),
-    besoinsApi.superieurs(), organisationApi.circuit(), reportingApi.accueil().catch(() => null),
+    organisationApi.unitesDemandables(), besoinsApi.motifs(), besoinsApi.metiers(), besoinsApi.categories(), besoinsApi.echelons(),
+    Promise.resolve([]), organisationApi.circuit(), reportingApi.accueil().catch(() => null),
   ])
   const rang = Object.keys(TYPES_UNITE)
   unites.value = [...u].sort((x, y) => rang.indexOf(x.type) - rang.indexOf(y.type) || x.libelle.localeCompare(y.libelle)); motifs.value = m; metiers.value = me; categories.value = c; echelons.value = e
@@ -50,6 +50,7 @@ onMounted(async () => {
   // unité de l'utilisateur proposée par défaut
   const mienne = acc?.unite && u.find((x) => x.libelle === acc.unite)
   if (mienne) form.idUniteOrga = mienne.id
+  else if (u.length === 1) form.idUniteOrga = u[0].id
 })
 
 // filtre de la liste des unités par niveau (direction, département, service, section)
@@ -62,12 +63,16 @@ watch(niveau, () => {
 
 watch(() => form.idUniteOrga, async (id) => {
   postesVacants.value = []; postesOccupes.value = []; remplaces.value = []
-  lignes.value = lignes.value.map((l) => ({ ...l, idPoste: null }))
+  superieurs.value = []
+  lignes.value = lignes.value.map((l) => ({ ...l, idPoste: null, idSuperieurDirect: null }))
   if (!id) return
-  // seuls les postes actifs et vacants peuvent être demandés en renfort ; les occupés passent par un remplacement
-  const [v, o] = await Promise.all([organisationApi.postes({ etat: 'ACTIF', occupation: 'LIBRE', idUnite: id }), besoinsApi.postesOccupes(id)])
+  // seuls les postes actifs et vacants peuvent être demandés en renfort ; les occupés passent par un remplacement.
+  // Le supérieur d'un nouveau poste est pris dans l'unité ou dans une unité dont elle dépend.
+  const [v, o, s] = await Promise.all([organisationApi.postes({ etat: 'ACTIF', occupation: 'LIBRE', idUnite: id }),
+    besoinsApi.postesOccupes(id), besoinsApi.superieurs(id)])
   postesVacants.value = v
   postesOccupes.value = o
+  superieurs.value = s
 })
 
 const etapesCircuit = computed(() => {
@@ -326,7 +331,7 @@ async function envoyer() {
         <hr>
         <p class="small fw-semibold mb-2">Circuit de validation</p>
         <Rail :etapes="etapesCircuit" class="rail-vertical" style="flex-direction:column;gap:12px" />
-        <p class="small muted mt-3">Le coût annuel est estimé avec le salaire maximum de la grille. La Finance valide d'office s'il tient dans le budget de l'unité.</p>
+        <p class="small muted mt-3">Le coût annuel est estimé avec le salaire maximum de la grille. L'étape de la Finance est validée d'office s'il tient dans le disponible de l'unité (budget validé moins la masse salariale et les autres besoins en cours).</p>
         <button type="submit" class="btn btn-primary btn-lg w-100" :disabled="envoi"><Icon name="send" /> Envoyer en validation</button>
       </div>
     </aside>

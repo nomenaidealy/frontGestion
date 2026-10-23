@@ -26,6 +26,7 @@ export const besoinsApi = {
   metiers: () => http.get('/api/rh/metiers'),
   categories: () => http.get('/api/rh/categories'),
   echelons: () => http.get('/api/rh/echelons'),
-  superieurs: () => http.get('/api/rh/postes/superieurs'),
+  /** Supérieurs possibles d'un nouveau poste : postes actifs de l'unité et des unités dont elle dépend */
+  superieurs: (idUnite) => http.get(`/api/rh/postes/superieurs${idUnite ? `?idUnite=${idUnite}` : ''}`),
 }
 export { q as query }

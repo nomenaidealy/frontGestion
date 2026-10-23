@@ -23,6 +23,8 @@ const fiche = ref(null)
 const selection = ref(null)    // sprint 2 : évaluations, historique, actions
 const errorSelection = ref(null)
 const postes = ref([])         // postes responsables proposés à la planification
+const mesPostes = ref([])      // postes de l'utilisateur : saisie des résultats qui lui sont confiés
+selectionApi.mesPostes().then((l) => { mesPostes.value = l }).catch(() => {})
 const chargement = ref(true)
 const chargementListe = ref(false)
 const nonConnecte = ref(false)
@@ -184,7 +186,7 @@ onMounted(async () => {
             <template v-if="selection">
               <template v-if="selection.evaluations.length">
                 <hr>
-                <SuiviEvaluations :evaluations="selection.evaluations" :postes="postes" @change="selectionChangee" />
+                <SuiviEvaluations :evaluations="selection.evaluations" :postes="postes" :mes-postes="mesPostes" @change="selectionChangee" />
               </template>
               <hr>
               <HistoriqueCandidature :historique="selection.historique" />

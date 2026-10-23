@@ -37,6 +37,8 @@ const groupes = computed(() => [
     titre: null,
     liens: [
       { to: '/', icone: 'home', libelle: 'Accueil', exact: true },
+      user.value?.idEmploye && { to: '/mon-contrat', icone: 'file', libelle: 'Mon contrat' },
+      a('Manager', 'RH', 'DG', 'Finance', 'ADMIN') && { to: '/contrats/demandes', icone: 'route', libelle: 'Demandes de contrat', compte: compteurs.value.demandesContratATraiter },
       { to: '/mes-taches', icone: 'clipboard', libelle: 'Mes tâches', compte: compteurs.value.tachesOnboarding },
       { to: '/mes-evaluations', icone: 'calendar', libelle: 'Mes évaluations', compte: compteurs.value.evaluationsAVenir },
     ],
@@ -46,7 +48,7 @@ const groupes = computed(() => [
     liens: [
       { to: '/besoins', icone: 'inbox', libelle: 'Besoins', compte: compteurs.value.validationsAFaire },
       a('Manager', 'RH', 'DG') && { to: '/besoins/nouveau', icone: 'plus', libelle: 'Exprimer un besoin' },
-      { to: '/postes', icone: 'briefcase', libelle: 'Postes' },
+      { to: '/postes', icone: 'briefcase', libelle: 'Postes', compte: compteurs.value.postesAValider },
       { to: '/organigramme', icone: 'tree', libelle: 'Organigramme' },
       { to: '/delegations', icone: 'swap', libelle: 'Délégations' },
     ],
@@ -80,9 +82,9 @@ const groupes = computed(() => [
     titre: 'Administration',
     liens: [
       a('ADMIN') && { to: '/admin/utilisateurs', icone: 'key', libelle: 'Utilisateurs', compte: compteurs.value.inscriptionsAValider },
-      a('ADMIN', 'RH') && { to: '/admin/referentiels', icone: 'settings', libelle: 'Référentiels' },
-      a('ADMIN', 'RH') && { to: '/admin/unites', icone: 'building', libelle: 'Unités' },
-      a('ADMIN', 'RH') && { to: '/admin/circuit', icone: 'route', libelle: 'Circuit de validation' },
+      { to: '/admin/referentiels', icone: 'settings', libelle: 'Référentiels' },
+      { to: '/admin/unites', icone: 'building', libelle: 'Unités' },
+      { to: '/admin/circuit', icone: 'route', libelle: 'Circuit de validation' },
       a('ADMIN', 'RH') && { to: '/admin/onboarding', icone: 'clipboard', libelle: "Modèles d'onboarding" },
       a('ADMIN', 'DG') && { to: '/admin/audit', icone: 'shield', libelle: "Journal d'audit" },
     ],

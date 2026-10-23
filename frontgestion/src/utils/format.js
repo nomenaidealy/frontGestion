@@ -71,6 +71,10 @@ export const ETATS = {
     DEPOSEE: ['Nouvelle', 'info'], PRESELECTIONNER: ['En sélection', 'wait'], RETENUE: ['Retenue', 'ok'], REFUSE: ['Refusée', 'ko'], DESISTE: ['Désistée', ''],
   },
   contrat: { CREE: ['Créé', 'info'], VALIDE: ['Validé', 'wait'], SIGNE: ['Signé', 'ok'], TERMINE: ['Terminé', ''], ANNULE: ['Annulé', 'ko'] },
+  demandeContrat: {
+    A_INSTRUIRE: ['À instruire (RH)', 'wait'], A_VALIDER_FINANCE: ['Avis Finance', 'wait'], A_VALIDER_DG: ['À valider (DG)', 'wait'],
+    VALIDEE: ['Validée', 'ok'], REFUSEE: ['Refusée', 'ko'], ANNULEE: ['Annulée', ''],
+  },
   onboarding: { EN_COURS: ['En cours', 'wait'], TERMINE: ['Terminé', 'ok'] },
   tache: { A_FAIRE: ['À faire', 'wait'], FAIT: ['Fait', 'ok'], NON_APPLICABLE: ['Non applicable', ''] },
   compte: { ACTIF: ['Actif', 'ok'], EN_ATTENTE: ['À valider', 'wait'], DESACTIVE: ['Désactivé', 'ko'] },
@@ -85,6 +89,8 @@ export function etat(type, valeur) {
   return e ? { libelle: e[0], ton: e[1] } : { libelle: valeur ?? '—', ton: '' }
 }
 
+export const MOTIFS_CONTRAT = { AUGMENTATION: 'Augmentation de salaire', RENOUVELLEMENT: 'Renouvellement du contrat', TRANSFORMATION: 'Changement de type de contrat' }
+export const ORIGINES_DEMANDE = { RH: 'Proposition de la RH', DG: 'Proposition du DG', MANAGER: 'Demande du manager', EMPLOYE: "Demande de l'employé" }
 export const TYPES_BESOIN = { CREATION: 'Création de poste', REMPLACEMENT: 'Remplacement' }
 export const TYPES_UNITE = { DIRECTION: 'Direction', DEPARTEMENT: 'Département', SERVICE: 'Service', SECTION: 'Section' }
 export const MOTIFS_DEPART = {

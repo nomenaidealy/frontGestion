@@ -35,7 +35,7 @@ const routes = [
   { path: '/besoins/nouveau', name: 'besoin-nouveau', component: v('besoins/BesoinNouveau'), meta: { roles: ['Manager', 'RH', 'DG'] } },
   { path: '/besoins/:id(\\d+)', name: 'besoin-fiche', component: v('besoins/BesoinFiche'), props: true },
   { path: '/postes', name: 'postes', component: v('postes/PostesListe') },
-  { path: '/postes/demande', name: 'poste-demande', component: v('postes/PosteDemande'), meta: { etroit: true } },
+  { path: '/postes/demande', name: 'poste-demande', component: v('postes/PosteDemande'), meta: { etroit: true, roles: ['Manager', 'RH', 'DG'] } },
   { path: '/postes/:id(\\d+)', name: 'poste-fiche', component: v('postes/PosteFiche'), props: true },
   { path: '/organigramme', name: 'organigramme', component: v('postes/Organigramme') },
 
@@ -54,7 +54,10 @@ const routes = [
   { path: '/personnel/nouveau', name: 'employe-nouveau', component: v('personnel/EmployeNouveau'), meta: { roles: RH, etroit: true } },
   { path: '/personnel/:id(\\d+)', name: 'employe-fiche', component: v('personnel/EmployeDossier'), props: true, meta: { roles: ['RH', 'DG', 'ADMIN'] } },
   { path: '/contrats/echeances', name: 'contrats-echeances', component: v('contrat/ContratsEcheances'), meta: { roles: RH } },
-  { path: '/contrats/:id(\\d+)', name: 'contrat-fiche', component: v('contrat/ContratFiche'), props: true, meta: { roles: RH } },
+  { path: '/contrats/demandes', name: 'demandes-contrat', component: v('contrat/DemandesContrat'), meta: { roles: ['RH', 'DG', 'Finance', 'ADMIN', 'Manager'] } },
+  { path: '/contrats/demandes/:id(\\d+)', name: 'demande-contrat-fiche', component: v('contrat/DemandeContratFiche'), props: true },
+  { path: '/mon-contrat', name: 'mon-contrat', component: v('contrat/MonContrat') },
+  { path: '/contrats/:id(\\d+)', name: 'contrat-fiche', component: v('contrat/ContratFiche'), props: true, meta: { roles: ['RH', 'DG'] } },
   { path: '/onboarding', name: 'onboarding', component: v('onboarding/OnboardingListe'), meta: { roles: ['RH', 'DG', 'ADMIN', 'Manager'] } },
   { path: '/onboarding/:id(\\d+)', name: 'onboarding-fiche', component: v('onboarding/OnboardingFiche'), props: true },
 
@@ -65,9 +68,9 @@ const routes = [
 
   // ------------------------------------------------ administration
   { path: '/admin/utilisateurs', name: 'utilisateurs', component: v('admin/Utilisateurs'), meta: { roles: ['ADMIN'] } },
-  { path: '/admin/referentiels', name: 'referentiels', component: v('admin/Referentiels'), meta: { roles: ['ADMIN', 'RH'] } },
-  { path: '/admin/unites', name: 'unites', component: v('admin/Unites'), meta: { roles: ['ADMIN', 'RH'] } },
-  { path: '/admin/circuit', name: 'circuit', component: v('admin/CircuitValidation'), meta: { roles: ['ADMIN', 'RH'] } },
+  { path: '/admin/referentiels', name: 'referentiels', component: v('admin/Referentiels'), meta: { roles: ['ADMIN', 'RH', 'DG'] } },
+  { path: '/admin/unites', name: 'unites', component: v('admin/Unites'), meta: { roles: ['ADMIN', 'RH', 'DG'] } },
+  { path: '/admin/circuit', name: 'circuit', component: v('admin/CircuitValidation'), meta: { roles: ['ADMIN', 'RH', 'DG'] } },
   { path: '/admin/onboarding', name: 'modeles-onboarding', component: v('admin/ModelesOnboarding'), meta: { roles: ['ADMIN', 'RH'] } },
   { path: '/admin/audit', name: 'audit', component: v('admin/JournalAudit'), meta: { roles: ['ADMIN', 'DG'] } },
 

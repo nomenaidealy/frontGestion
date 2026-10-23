@@ -23,7 +23,7 @@ onMounted(async () => {
     return
   }
   try {
-    const data = await offresApi.nouvelle(route.query.idBesoin)
+    const data = await offresApi.nouvelle(route.query.idBesoin, route.query.idPoste)
     besoin.value = data.besoin
     typesContrat.value = data.typesContrat
     // Valeurs par défaut calculées par le back (date de publication = aujourd'hui, référence proposée)

@@ -22,6 +22,8 @@ const AIDE = {
   'types-information': 'Rubriques du CV saisies par les candidats.',
 }
 const refs = ref({})
+const modifiables = ref([])   // organisation (métiers, catégories, échelons, types de contrat) : DG ; recrutement : RH, DG, administrateur
+const modifiable = computed(() => modifiables.value.includes(courant.value))
 const courant = ref(route.query.ref || 'metiers')
 const liste = ref(null)
 const categories = ref([])
@@ -37,7 +39,10 @@ async function charger() {
   if (courant.value === 'metiers') categories.value = await referentielsApi.lister('categories')
 }
 watch(courant, charger)
-onMounted(async () => { refs.value = await referentielsApi.liste(); charger() })
+onMounted(async () => {
+  ;[refs.value, modifiables.value] = await Promise.all([referentielsApi.liste(), referentielsApi.modifiables()])
+  charger()
+})
 const titre = computed(() => refs.value[courant.value] || '')
 
 function ouvrir(x) {
@@ -73,7 +78,8 @@ async function supprimer() {
   <section class="panel">
     <div class="panel-head">
       <div><h2>{{ titre }}</h2><p>{{ AIDE[courant] }}</p></div>
-      <button type="button" class="btn btn-primary btn-sm" @click="ouvrir(null)"><Icon name="plus" /> Ajouter</button>
+      <button v-if="modifiable" type="button" class="btn btn-primary btn-sm" @click="ouvrir(null)"><Icon name="plus" /> Ajouter</button>
+      <span v-else class="small muted">Consultation seule : référentiel d'organisation modifiable par le Directeur général.</span>
     </div>
     <Chargement v-if="liste === null" />
     <div v-else class="table-responsive">
@@ -91,8 +97,10 @@ async function supprimer() {
               <td class="num">{{ x.renouvellementMax ?? '—' }}</td>
             </template>
             <td class="text-end nowrap">
-              <button type="button" class="btn btn-sm btn-light" @click="ouvrir(x)">Modifier</button>
-              <button v-if="!x.systeme" type="button" class="btn btn-sm btn-link text-danger" @click="aSupprimer = x">Supprimer</button>
+              <template v-if="modifiable">
+                <button type="button" class="btn btn-sm btn-light" @click="ouvrir(x)">Modifier</button>
+                <button v-if="!x.systeme" type="button" class="btn btn-sm btn-link text-danger" @click="aSupprimer = x">Supprimer</button>
+              </template>
             </td>
           </tr>
           <tr v-if="!liste.length"><td colspan="4" class="muted text-center py-4">Aucune valeur.</td></tr>
