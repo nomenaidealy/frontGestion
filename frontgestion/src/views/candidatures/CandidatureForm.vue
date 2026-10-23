@@ -122,7 +122,7 @@ async function valider() {
 
     <template v-else>
       <div class="small text-muted">{{ offre.reference }}</div>
-      <h4 class="mb-1">Candidater : {{ offre.postes || 'Poste à pourvoir' }}</h4>
+      <h1 class="mb-1">Candidater : {{ offre.postes || 'Poste à pourvoir' }}</h1>
       <p class="text-muted">
         {{ offre.unite }}<span v-if="offre.direction && offre.direction !== offre.unite"> · {{ offre.direction }}</span>
       </p>

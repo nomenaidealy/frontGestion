@@ -1,195 +1,161 @@
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { besoinApi as api } from '@/api/besoinApi'
+import { contratsApi } from '@/api/contrats'
+import { useToast } from '@/composables/useToast'
+import { dateFr, dateHeure, etat } from '@/utils/format'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import Statut from '@/components/ui/Statut.vue'
+import Rail from '@/components/ui/Rail.vue'
+import Modal from '@/components/ui/Modal.vue'
+import Chargement from '@/components/ui/Chargement.vue'
+import Icon from '@/components/ui/Icon.vue'
 
-const props = defineProps({ id: [String, Number] })
-
-const contrat = ref(null)
-const erreur = ref('')
-const succes = ref('')
-const enCours = ref(false)
-
-const fichier = ref(null)
-const renouv = reactive({ idTypeNouveau: '', dateFinPrevue: '' })
-const types = ref([])   // CE, CDD, CDI (GET /api/rh/contrats/types)
+const props = defineProps({ id: { type: [String, Number], required: true } })
 const router = useRouter()
+const toast = useToast()
+const c = ref(null)
+const types = ref([])
+const fichier = ref(null)
+const enCours = ref(false)
+const dialogue = ref(null)        // annuler | renouveler
+const renouv = reactive({ idTypeNouveau: '', dateFinPrevue: '' })
+const erreur = ref('')
 
-async function charger() {
-  try {
-    contrat.value = await api.contrat(props.id)
-  } catch (e) {
-    erreur.value = e.message
-  }
-}
+async function charger() { c.value = await contratsApi.fiche(props.id) }
 onMounted(async () => {
   await charger()
-  try { types.value = await api.typesContrat() } catch { /* liste vide : renouvellement du même type */ }
+  try { types.value = await contratsApi.types() } catch { /* même type seulement */ }
 })
 watch(() => props.id, charger)
 
-// Exécute une action, affiche le résultat, met à jour la fiche
-async function agir(action, messageSucces) {
+// Cycle de vie : créé (généré à l'embauche) → validé par la DRH → signé (copie déposée)
+const rail = computed(() => {
+  if (!c.value) return []
+  const h = c.value.historique || []
+  const quand = (s) => { const x = h.find((e) => e.statut === s); return x ? dateHeure(x.date) : null }
+  const ordre = ['CREE', 'VALIDE', 'SIGNE']
+  const pos = ordre.indexOf(c.value.statut)
+  const fin = ['TERMINE', 'ANNULE'].includes(c.value.statut)
+  const etapes = ordre.map((s, i) => ({
+    titre: { CREE: 'Créé', VALIDE: 'Validé par la RH', SIGNE: 'Signé' }[s],
+    meta: quand(s) || (i === pos + 1 && !fin ? 'Prochaine étape' : ''),
+    statut: quand(s) ? 'fait' : i === pos + 1 && !fin ? 'en-cours' : 'a-venir',
+  }))
+  if (fin) etapes.push({ titre: etat('contrat', c.value.statut).libelle, meta: quand(c.value.statut), note: c.value.motifFin, statut: c.value.statut === 'ANNULE' ? 'refuse' : 'fait' })
+  return etapes
+})
+
+async function agir(action, message) {
   erreur.value = ''
-  succes.value = ''
   enCours.value = true
   try {
-    const res = await action()
-    if (res && res.id === contrat.value?.id) contrat.value = res
-    succes.value = messageSucces
-    return res
+    const r = await action()
+    toast.ok(message)
+    return r
   } catch (e) {
     erreur.value = e.message
+    return null
   } finally {
     enCours.value = false
   }
 }
-
-const valider = () => agir(() => api.validerContrat(props.id), 'Contrat validé.')
-const annuler = () => {
-  if (confirm('Annuler ce contrat ?')) agir(() => api.annulerContrat(props.id), 'Contrat annulé.')
-}
-const signer = async () => {
-  await agir(() => api.signerContrat(props.id), 'Contrat signé.')
-  await charger()
-}
-
-function choisirFichier(e) { fichier.value = e.target.files[0] || null }
-
+const valider = async () => { if (await agir(() => contratsApi.valider(props.id), 'Contrat validé')) charger() }
+const signer = async () => { if (await agir(() => contratsApi.signer(props.id), "Contrat signé : l'onboarding démarre")) charger() }
+const annuler = async () => { dialogue.value = null; if (await agir(() => contratsApi.annuler(props.id), 'Contrat annulé')) charger() }
 async function deposer() {
-  if (!fichier.value) { erreur.value = 'Choisis un fichier PDF.'; return }
-  await agir(() => api.deposerContrat(props.id, fichier.value), 'Contrat signé déposé.')
-  fichier.value = null
+  if (!fichier.value) { erreur.value = 'Choisissez le PDF signé.'; return }
+  if (await agir(() => contratsApi.deposer(props.id, fichier.value), 'Copie signée déposée')) { fichier.value = null; charger() }
 }
-
 async function renouveler() {
-  const payload = {
+  const n = await agir(() => contratsApi.renouveler(props.id, {
     idTypeNouveau: renouv.idTypeNouveau ? Number(renouv.idTypeNouveau) : null,
     dateFinPrevue: renouv.dateFinPrevue || null,
-  }
-  const nouveau = await agir(() => api.renouveler(props.id, payload), 'Nouveau contrat créé.')
-  if (nouveau) router.push({ name: 'contrat-fiche', params: { id: nouveau.id } })
+  }), 'Nouveau contrat créé')
+  if (n) { dialogue.value = null; router.push(`/contrats/${n.id}`) }
 }
-
-const statut = computed(() => contrat.value?.statut)
-const libelleStatut = { CREE: 'Créé', VALIDE: 'Validé', SIGNE: 'Signé', TERMINE: 'Terminé', ANNULE: 'Annulé' }
-const classeStatut = {
-  CREE: 'bg-secondary', VALIDE: 'bg-info', SIGNE: 'bg-success',
-  TERMINE: 'bg-dark', ANNULE: 'bg-danger',
-}
-const formatDate = (d) => (d ? String(d).replace('T', ' ').slice(0, 16) : '-')
 </script>
 
 <template>
-  <div class="container">
-    <h2>Fiche contrat</h2>
+  <Chargement v-if="!c" />
+  <template v-else>
+    <PageHeader :titre="`Contrat ${c.reference}`" :retour="c.idEmploye ? `/personnel/${c.idEmploye}` : '/contrats/echeances'" :retour-libelle="c.employe">
+      <template #sous-titre>
+        <p class="d-flex flex-wrap gap-2 align-items-center"><Statut type="contrat" :valeur="c.statut" /> {{ c.type }} — {{ c.employe }} ({{ c.matricule }}), {{ c.poste }}</p>
+      </template>
+      <a v-if="c.lienDocument" :href="c.lienDocument" target="_blank" rel="noopener" class="btn btn-light">
+        <Icon name="file" /> {{ c.documentSigne ? 'Copie signée' : 'Contrat à imprimer' }}
+      </a>
+      <button v-if="c.statut === 'CREE'" type="button" class="btn btn-primary" :disabled="enCours" @click="valider">Valider le contrat</button>
+      <button v-if="c.statut === 'SIGNE'" type="button" class="btn btn-primary" @click="dialogue = 'renouveler'">Renouveler ou changer de type</button>
+      <button v-if="['CREE', 'VALIDE'].includes(c.statut)" type="button" class="btn btn-outline-danger" @click="dialogue = 'annuler'">Annuler</button>
+    </PageHeader>
 
     <div v-if="erreur" class="alert alert-danger">{{ erreur }}</div>
-    <div v-if="succes" class="alert alert-success">{{ succes }}</div>
 
-    <div v-if="contrat">
-      <div class="card mb-3">
-        <div class="card-body">
-          <h5>
-            {{ contrat.reference }}
-            <span class="badge ms-2" :class="classeStatut[statut]">{{ libelleStatut[statut] || statut }}</span>
-          </h5>
-          <dl class="row mb-0">
-            <dt class="col-sm-3">Employé</dt>
-            <dd class="col-sm-9">{{ contrat.employe }} ({{ contrat.matricule }})</dd>
-            <dt class="col-sm-3">Poste</dt>
-            <dd class="col-sm-9">{{ contrat.poste }}</dd>
-            <dt class="col-sm-3">Type</dt>
-            <dd class="col-sm-9">{{ contrat.type }}</dd>
-            <dt class="col-sm-3">Début</dt>
-            <dd class="col-sm-9">{{ contrat.dateDebut }}</dd>
-            <dt class="col-sm-3">Fin prévue</dt>
-            <dd class="col-sm-9">{{ contrat.dateFinPrevue || 'Sans limite' }}</dd>
-            <dt class="col-sm-3">Fin effective</dt>
-            <dd class="col-sm-9">{{ contrat.dateFinEffective || '-' }}</dd>
-            <dt class="col-sm-3">Motif de fin</dt>
-            <dd class="col-sm-9">{{ contrat.motifFin || '-' }}</dd>
-            <dt class="col-sm-3">Contrat précédent</dt>
-            <dd class="col-sm-9">{{ contrat.referencePrecedent || '-' }}</dd>
-            <dt class="col-sm-3">Document</dt>
-            <dd class="col-sm-9">
-              <a v-if="contrat.lienDocument" :href="contrat.lienDocument" target="_blank" rel="noopener">
-                {{ contrat.documentSigne ? 'Copie signée (PDF)' : 'Contrat généré à imprimer (PDF)' }}
-              </a>
-              <span v-else>-</span>
-            </dd>
-          </dl>
-        </div>
-      </div>
+    <section class="panel">
+      <div class="panel-head"><h2>Cycle du contrat</h2></div>
+      <div class="panel-body"><Rail :etapes="rail" /></div>
+    </section>
 
-      <!-- Actions selon l'état -->
-      <div class="card mb-3" v-if="['CREE', 'VALIDE', 'SIGNE'].includes(statut)">
-        <div class="card-body">
-          <h6>Actions</h6>
-
-          <div v-if="statut === 'CREE'" class="d-flex gap-2">
-            <button class="btn btn-primary" :disabled="enCours" @click="valider">Valider</button>
-            <button class="btn btn-outline-danger" :disabled="enCours" @click="annuler">Annuler</button>
+    <section v-if="c.statut === 'VALIDE'" class="panel" style="border-color:#e9c98d">
+      <div class="panel-head"><div><h2>Signature</h2><p>Imprimez le contrat, faites-le signer, déposez la copie signée puis confirmez la signature.</p></div></div>
+      <div class="panel-body">
+        <div class="form-grid">
+          <div>
+            <label class="form-label" for="pdf">Copie signée (PDF)</label>
+            <input id="pdf" type="file" accept="application/pdf" class="form-control" @change="fichier = $event.target.files[0] || null">
           </div>
-
-          <div v-if="statut === 'VALIDE'">
-            <div class="mb-2">
-              <label class="form-label">Contrat signé (PDF)</label>
-              <div class="d-flex gap-2">
-                <input type="file" accept="application/pdf" class="form-control" @change="choisirFichier" />
-                <button class="btn btn-secondary" :disabled="enCours" @click="deposer">Déposer</button>
-              </div>
-            </div>
-            <div class="d-flex gap-2">
-              <button class="btn btn-success" :disabled="enCours || !contrat.documentSigne" @click="signer">
-                Signer
-              </button>
-              <button class="btn btn-outline-danger" :disabled="enCours" @click="annuler">Annuler</button>
-            </div>
-            <small v-if="!contrat.documentSigne" class="text-muted">
-              Imprime le contrat, fais-le signer, puis dépose la copie signée (PDF) avant de signer.
-            </small>
-          </div>
-
-          <div v-if="statut === 'SIGNE'">
-            <h6>Renouveler ou changer de type</h6>
-            <div class="row g-2 align-items-end">
-              <div class="col-md-4">
-                <label class="form-label">Nouveau type</label>
-                <select v-model="renouv.idTypeNouveau" class="form-select">
-                  <option value="">Même type (renouvellement)</option>
-                  <option v-for="t in types" :key="t.id" :value="t.id">{{ t.libelle }}</option>
-                </select>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label">Date de fin prévue</label>
-                <input v-model="renouv.dateFinPrevue" type="date" class="form-control" />
-                <small class="text-muted">Vide pour un CDI.</small>
-              </div>
-              <div class="col-md-4">
-                <button class="btn btn-primary" :disabled="enCours" @click="renouveler">Créer le contrat</button>
-              </div>
-            </div>
+          <div class="d-flex align-items-end gap-2">
+            <button type="button" class="btn btn-light" :disabled="enCours || !fichier" @click="deposer">Déposer</button>
+            <button type="button" class="btn btn-primary" :disabled="enCours || !c.documentSigne" @click="signer"><Icon name="check" /> Confirmer la signature</button>
           </div>
         </div>
+        <p v-if="c.documentSigne" class="small text-success mt-2 mb-0">Copie signée déposée : la signature peut être confirmée.</p>
       </div>
+    </section>
 
-      <!-- Historique -->
-      <div class="card">
-        <div class="card-body">
-          <h6>Historique des états</h6>
-          <table class="table table-sm mb-0">
-            <thead><tr><th>État</th><th>Date</th></tr></thead>
-            <tbody>
-              <tr v-for="(h, i) in contrat.historique" :key="i">
-                <td>{{ libelleStatut[h.statut] || h.statut }}</td>
-                <td>{{ formatDate(h.date) }}</td>
-              </tr>
-              <tr v-if="!contrat.historique?.length"><td colspan="2" class="text-muted">Aucun historique.</td></tr>
-            </tbody>
-          </table>
+    <section class="panel">
+      <div class="panel-head"><h2>Conditions</h2></div>
+      <div class="panel-body">
+        <dl class="facts">
+          <div><dt>Type</dt><dd>{{ c.type }}</dd></div>
+          <div><dt>Début</dt><dd>{{ dateFr(c.dateDebut) }}</dd></div>
+          <div><dt>Fin prévue</dt><dd>{{ c.dateFinPrevue ? dateFr(c.dateFinPrevue) : 'Sans limite' }}</dd></div>
+          <div><dt>Fin effective</dt><dd>{{ dateFr(c.dateFinEffective) }}</dd></div>
+          <div><dt>Motif de fin</dt><dd>{{ c.motifFin || '—' }}</dd></div>
+          <div><dt>Contrat précédent</dt><dd><RouterLink v-if="c.idPrecedent" :to="`/contrats/${c.idPrecedent}`">{{ c.referencePrecedent }}</RouterLink><template v-else>—</template></dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <Modal v-if="dialogue === 'annuler'" titre="Annuler ce contrat ?" @fermer="dialogue = null">
+      <p>Le contrat ne pourra plus être signé. L'historique est conservé.</p>
+      <template #pied>
+        <button type="button" class="btn btn-light" @click="dialogue = null">Garder le contrat</button>
+        <button type="button" class="btn btn-danger" @click="annuler">Annuler le contrat</button>
+      </template>
+    </Modal>
+    <Modal v-if="dialogue === 'renouveler'" titre="Renouveler ou changer de type" @fermer="dialogue = null">
+      <p class="small muted">Un nouveau contrat est créé à la suite de celui-ci, qui passe « terminé » sans perdre son historique. Les limites de durée et de renouvellement du type sont contrôlées.</p>
+      <div class="form-grid">
+        <div>
+          <label class="form-label" for="rt">Type du nouveau contrat</label>
+          <select id="rt" v-model="renouv.idTypeNouveau" class="form-select">
+            <option value="">Même type ({{ c.type }})</option>
+            <option v-for="t in types" :key="t.id" :value="t.id">{{ t.libelle }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label" for="rf">Date de fin prévue</label>
+          <input id="rf" v-model="renouv.dateFinPrevue" type="date" class="form-control">
+          <span class="form-text">Laissez vide pour un CDI.</span>
         </div>
       </div>
-    </div>
-  </div>
+      <template #pied>
+        <button type="button" class="btn btn-light" @click="dialogue = null">Annuler</button>
+        <button type="button" class="btn btn-primary" :disabled="enCours" @click="renouveler">Créer le contrat</button>
+      </template>
+    </Modal>
+  </template>
 </template>

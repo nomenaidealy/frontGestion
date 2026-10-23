@@ -1,4 +1,5 @@
 <script setup>
+import PageHeader from '@/components/ui/PageHeader.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { candidaturesPubliquesApi as api } from '@/api/candidatures'
@@ -49,8 +50,7 @@ const libelleUnite = (u) => '   '.repeat(Math.max(0, u.profondeur - 1)) + u.libe
 
 <template>
   <div class="container" style="max-width: 960px">
-    <h4 class="mb-1">Offres d'emploi</h4>
-    <p class="text-muted">Consultez les postes ouverts et déposez votre candidature en ligne.</p>
+    <PageHeader titre="Nos offres d'emploi" sous-titre="Consultez les postes ouverts et déposez votre candidature en ligne, CV en PDF." />
 
     <div class="row g-2 align-items-center mb-3">
       <label for="filtre-unite" class="col-auto col-form-label fw-semibold">Direction ou département</label>

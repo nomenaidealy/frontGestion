@@ -1,80 +1,101 @@
-
-// Chaque membre ajoute ses routes ici.
-// ⚠ Ne pas utiliser de chemins qui commencent par /api, /auth, /uploads : ils partent vers le back (vite.config.js).
-// Le routeur associe une URL à une vue (un composant « page »).
+// Routes du SIRH.
+// meta.public : accessible sans connexion ; meta.layout : 'auth' ou 'public' (sinon : application avec menu) ;
+// meta.roles : rôles autorisés (sinon : tout utilisateur connecté).
+// ⚠ Pas de chemin commençant par /api, /auth ou /uploads : ils partent vers le back (vite.config.js).
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
-import LoginView from '../components/LoginView.vue'
-import BesoinsView from '../views/besoins/BesoinsView.vue'
-import PostesProposesView from '../views/PostesProposesView.vue'
-import NotFoundView from '../views/NotFoundView.vue'
+
+const vues = import.meta.glob('../views/**/*.vue')
+const v = (chemin) => {
+  const vue = vues[`../views/${chemin}.vue`]
+  if (!vue) throw new Error(`Vue introuvable : ${chemin}`)
+  return vue
+}
+const RH = ['RH']
 
 const routes = [
-  { path: '/', name: 'home', component: () => import('@/views/HomeView.vue') },
+  // ------------------------------------------------ connexion, inscription
+  { path: '/login', name: 'login', component: v('auth/Connexion'), meta: { public: true, layout: 'auth' } },
+  { path: '/inscription', name: 'inscription', component: v('auth/Inscription'), meta: { public: true, layout: 'auth' } },
 
-  // P4 – Offres d'emploi (RH)
-  { path: '/offres', name: 'offres', component: () => import('@/views/offres/OffresList.vue') },
-  { path: '/offres/besoins', name: 'offres-besoins', component: () => import('@/views/offres/BesoinsOuverts.vue') },
-  // Cible du bouton « Ouvrir Recrutement » (P3) : /offres/nouvelle?idBesoin=ID
-  { path: '/offres/nouvelle', name: 'offre-nouvelle', component: () => import('@/views/offres/OffreForm.vue') },
+  // ------------------------------------------------ espace public (candidats)
+  { path: '/emplois', name: 'emplois', component: v('candidatures/OffresPubliques'), meta: { public: true, layout: 'public' } },
+  { path: '/emplois/:id/candidater', name: 'candidater', component: v('candidatures/CandidatureForm'), props: true, meta: { public: true, layout: 'public' } },
+  { path: '/proposition/:jeton', name: 'proposition-reponse', component: v('embauche/PropositionReponse'), props: true, meta: { public: true, layout: 'public' } },
 
-  // P5 – Candidatures, côté public (sans connexion). /offres est déjà pris par P4 (offres côté RH).
-  // meta.public : pages sans connexion, à laisser passer par la garde du routeur prévue par P1.
-  { path: '/emplois', name: 'emplois', component: () => import('@/views/candidatures/OffresPubliques.vue'), meta: { public: true } },
-  { path: '/emplois/:id/candidater', name: 'candidater', component: () => import('@/views/candidatures/CandidatureForm.vue'), props: true, meta: { public: true } },
+  // ------------------------------------------------ espace personnel
+  { path: '/', name: 'home', component: v('Accueil') },
+  { path: '/profil', name: 'profil', component: v('auth/Profil'), meta: { etroit: true } },
+  { path: '/mes-taches', name: 'mes-taches', component: v('onboarding/MesTaches') },
+  { path: '/mes-evaluations', name: 'mes-evaluations', component: v('candidatures/MesEvaluations') },
+  { path: '/delegations', name: 'delegations', component: v('Delegations') },
 
-  // P5 – Candidatures reçues (RH)
-  { path: '/candidatures', name: 'candidatures', component: () => import('@/views/candidatures/CandidaturesRecues.vue') },
+  // ------------------------------------------------ besoins et postes
+  { path: '/besoins', name: 'besoins', component: v('besoins/BesoinsListe') },
+  { path: '/besoins/nouveau', name: 'besoin-nouveau', component: v('besoins/BesoinNouveau'), meta: { roles: ['Manager', 'RH', 'DG'] } },
+  { path: '/besoins/:id(\\d+)', name: 'besoin-fiche', component: v('besoins/BesoinFiche'), props: true },
+  { path: '/postes', name: 'postes', component: v('postes/PostesListe') },
+  { path: '/postes/demande', name: 'poste-demande', component: v('postes/PosteDemande'), meta: { etroit: true } },
+  { path: '/postes/:id(\\d+)', name: 'poste-fiche', component: v('postes/PosteFiche'), props: true },
+  { path: '/organigramme', name: 'organigramme', component: v('postes/Organigramme') },
 
-  // P2 – Besoins et postes
-{ path: '/besoins/nouveau', name: 'besoin-nouveau', component: () => import('@/views/besoins/BesoinFormView.vue') },
-{ path: '/postes/demande', name: 'poste-demande', component: () => import('@/views/besoins/PosteDemandeView.vue') },
-  { path: '/candidatures/niveaux', name: 'niveaux-selection', component: () => import('@/views/candidatures/NiveauxSelection.vue') },
+  // ------------------------------------------------ recrutement (RH)
+  { path: '/offres', name: 'offres', component: v('offres/OffresList'), meta: { roles: RH } },
+  { path: '/offres/besoins', name: 'offres-besoins', component: v('offres/BesoinsOuverts'), meta: { roles: RH } },
+  { path: '/offres/nouvelle', name: 'offre-nouvelle', component: v('offres/OffreForm'), meta: { roles: RH, etroit: true } },
+  { path: '/candidatures', name: 'candidatures', component: v('candidatures/CandidaturesRecues'), meta: { roles: RH } },
+  { path: '/candidatures/niveaux', name: 'niveaux-selection', component: v('candidatures/NiveauxSelection'), meta: { roles: RH, etroit: true } },
+  { path: '/propositions', name: 'propositions', component: v('embauche/PropositionsRh'), meta: { roles: RH } },
+  { path: '/propositions/nouvelle', name: 'proposition-nouvelle', component: v('embauche/PropositionNouvelle'), meta: { roles: RH, etroit: true } },
+  { path: '/propositions/:id(\\d+)', name: 'proposition-fiche', component: v('embauche/PropositionFiche'), props: true, meta: { roles: RH } },
 
-  // P5 – Espace évaluateur (tout utilisateur connecté)
-  { path: '/mes-evaluations', name: 'mes-evaluations', component: () => import('@/views/candidatures/MesEvaluations.vue') },
-  // meta.public : accessible sans être connecté
-  { path: '/login', name: 'login', component: LoginView, meta: { public: true } },
+  // ------------------------------------------------ personnel
+  { path: '/personnel', name: 'personnel', component: v('personnel/PersonnelListe'), meta: { roles: ['RH', 'DG', 'ADMIN'] } },
+  { path: '/personnel/nouveau', name: 'employe-nouveau', component: v('personnel/EmployeNouveau'), meta: { roles: RH, etroit: true } },
+  { path: '/personnel/:id(\\d+)', name: 'employe-fiche', component: v('personnel/EmployeDossier'), props: true, meta: { roles: ['RH', 'DG', 'ADMIN'] } },
+  { path: '/contrats/echeances', name: 'contrats-echeances', component: v('contrat/ContratsEcheances'), meta: { roles: RH } },
+  { path: '/contrats/:id(\\d+)', name: 'contrat-fiche', component: v('contrat/ContratFiche'), props: true, meta: { roles: RH } },
+  { path: '/onboarding', name: 'onboarding', component: v('onboarding/OnboardingListe'), meta: { roles: ['RH', 'DG', 'ADMIN', 'Manager'] } },
+  { path: '/onboarding/:id(\\d+)', name: 'onboarding-fiche', component: v('onboarding/OnboardingFiche'), props: true },
 
-  { path: '/besoins', name: 'besoins', component: BesoinsView },
+  // ------------------------------------------------ pilotage
+  { path: '/tableau-de-bord', name: 'tableau-de-bord', component: v('pilotage/TableauDeBord'), meta: { roles: ['RH', 'DG', 'Finance', 'ADMIN'] } },
+  { path: '/finance/budgets', name: 'budgets', component: v('pilotage/Budgets'), meta: { roles: ['RH', 'DG', 'Finance', 'ADMIN'] } },
+  { path: '/finance/grille', name: 'grille', component: v('pilotage/GrilleSalariale'), meta: { roles: ['RH', 'DG', 'Finance', 'ADMIN'] } },
 
-  { path: '/postes/proposes', name: 'postes-proposes', component: PostesProposesView },
+  // ------------------------------------------------ administration
+  { path: '/admin/utilisateurs', name: 'utilisateurs', component: v('admin/Utilisateurs'), meta: { roles: ['ADMIN'] } },
+  { path: '/admin/referentiels', name: 'referentiels', component: v('admin/Referentiels'), meta: { roles: ['ADMIN', 'RH'] } },
+  { path: '/admin/unites', name: 'unites', component: v('admin/Unites'), meta: { roles: ['ADMIN', 'RH'] } },
+  { path: '/admin/circuit', name: 'circuit', component: v('admin/CircuitValidation'), meta: { roles: ['ADMIN', 'RH'] } },
+  { path: '/admin/onboarding', name: 'modeles-onboarding', component: v('admin/ModelesOnboarding'), meta: { roles: ['ADMIN', 'RH'] } },
+  { path: '/admin/audit', name: 'audit', component: v('admin/JournalAudit'), meta: { roles: ['ADMIN', 'DG'] } },
 
-  // P2 – Contrats (RH)
-  { path: '/contrats/echeances', name: 'contrats-echeances', component: () => import('@/views/contrat/ContratsEcheances.vue') },
-  { path: '/contrats/employe/:idEmploye', name: 'contrats-employe', component: () => import('@/views/contrat/ContratsEmployeView.vue'), props: true },
-  { path: '/contrats/:id(\\d+)', name: 'contrat-fiche', component: () => import('@/views/contrat/ContratFiche.vue'), props: true },
+  // anciens liens (notifications, favoris)
+  { path: '/rh/propositions/:id(\\d+)', redirect: (to) => `/propositions/${to.params.id}` },
+  { path: '/validations/:id(\\d+)', redirect: (to) => `/besoins/${to.params.id}` },
+  { path: '/postes/proposes', redirect: { path: '/postes', query: { etat: 'PROPOSE' } } },
+  { path: '/onboarding/mes-taches', redirect: '/mes-taches' },
+  { path: '/contrats/employe/:idEmploye(\\d+)', redirect: (to) => `/personnel/${to.params.idEmploye}` },
 
-  // P4 – Propositions d'embauche (RH) et réponse du candidat (lien personnel envoyé par la RH, sans connexion)
-  { path: '/propositions', name: 'propositions', component: () => import('@/views/embauche/PropositionsRh.vue') },
-  { path: '/propositions/nouvelle', name: 'proposition-nouvelle', component: () => import('@/views/embauche/PropositionNouvelle.vue') },
-  { path: '/propositions/:id(\\d+)', name: 'proposition-fiche', component: () => import('@/views/embauche/PropositionFiche.vue'), props: true },
-  { path: '/proposition/:jeton', name: 'proposition-reponse', component: () => import('@/views/embauche/PropositionReponse.vue'), props: true, meta: { public: true } },
-
-  // P3 – Personnel : liste et fiche employé
-  { path: '/personnel', name: 'personnel', component: () => import('@/views/personnel/PersonnelListe.vue') },
-  { path: '/personnel/:id(\\d+)', name: 'employe-fiche', component: () => import('@/views/personnel/EmployeFiche.vue'), props: true },
-
-  // Toute autre URL → page 404 (à mettre en dernier)
-  { path: '/:pathMatch(.*)*', name: 'introuvable', component: NotFoundView },
+  { path: '/:pathMatch(.*)*', name: 'introuvable', component: v('Introuvable') },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  scrollBehavior: () => ({ top: 0 }),
 })
 
 router.beforeEach(async (to) => {
-  const { isAuthenticated, initialized, loadSession } = useAuth()
-
+  const { isAuthenticated, initialized, loadSession, a } = useAuth()
   if (!initialized.value) await loadSession()
 
   if (!to.meta.public && !isAuthenticated.value) {
-    return { name: 'login', query: { redirect: to.fullPath } }
+    return { name: 'login', query: to.fullPath !== '/' ? { redirect: to.fullPath } : {} }
   }
-  if (to.name === 'login' && isAuthenticated.value) {
-    return { path: '/' }
-  }
+  if ((to.name === 'login' || to.name === 'inscription') && isAuthenticated.value) return { path: '/' }
+  if (to.meta.roles && !a(...to.meta.roles)) return { name: 'home', query: { refus: to.fullPath } }
 })
 
 export default router

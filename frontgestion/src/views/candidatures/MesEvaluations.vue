@@ -1,4 +1,5 @@
 <script setup>
+import PageHeader from '@/components/ui/PageHeader.vue'
 import { computed, onMounted, ref } from 'vue'
 import { NonConnecteError } from '@/api/http'
 import { selectionApi, TYPES_EVALUATION, formatScore } from '@/api/selection'
@@ -48,8 +49,7 @@ onMounted(charger)
 
 <template>
   <div class="container" style="max-width: 960px">
-    <h4 class="mb-1">Mes évaluations</h4>
-    <p class="text-muted">Tests et entretiens que vous faites passer aux candidats, pour votre poste.</p>
+    <PageHeader titre="Mes évaluations" sous-titre="Tests et entretiens que vous faites passer aux candidats, pour votre poste." />
 
     <div v-if="chargement" class="text-muted">Chargement…</div>
     <AlerteConnexion v-else-if="nonConnecte" />

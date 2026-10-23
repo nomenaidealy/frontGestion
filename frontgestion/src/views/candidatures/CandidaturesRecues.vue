@@ -1,4 +1,5 @@
 <script setup>
+import PageHeader from '@/components/ui/PageHeader.vue'
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NonConnecteError } from '@/api/http'
@@ -134,15 +135,9 @@ onMounted(async () => {
 
 <template>
   <div class="container-fluid px-4" style="max-width: 1300px">
-    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
-      <div>
-        <h4 class="mb-1">Candidatures reçues</h4>
-        <p class="text-muted">Consultez les dossiers déposés pour chaque offre d'emploi.</p>
-      </div>
-      <RouterLink :to="{ name: 'niveaux-selection', query: idOffre ? { offre: idOffre } : {} }" class="btn btn-outline-secondary btn-sm">
-        Niveaux de sélection
-      </RouterLink>
-    </div>
+    <PageHeader titre="Candidatures reçues" sous-titre="Les dossiers déposés pour chaque offre : présélection, évaluations, décision.">
+      <RouterLink :to="{ name: 'niveaux-selection', query: idOffre ? { offre: idOffre } : {} }" class="btn btn-light">Niveaux de sélection</RouterLink>
+    </PageHeader>
 
     <div v-if="chargement" class="text-muted">Chargement…</div>
 

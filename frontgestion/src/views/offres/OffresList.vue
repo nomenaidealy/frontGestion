@@ -1,4 +1,6 @@
 <script setup>
+import Statut from '@/components/ui/Statut.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
 // P4 – Liste des offres d'emploi (RH)
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
@@ -55,10 +57,9 @@ onMounted(charger)
 
 <template>
   <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h4 class="m-0">Offres d'emploi</h4>
-      <RouterLink to="/offres/besoins" class="btn btn-primary btn-sm">+ Nouvelle offre</RouterLink>
-    </div>
+    <PageHeader titre="Offres d'emploi" sous-titre="Offres créées à partir des besoins validés : brouillon, publication sur le site carrières, clôture.">
+      <RouterLink to="/offres/besoins" class="btn btn-primary">Nouvelle offre</RouterLink>
+    </PageHeader>
 
     <div v-if="message" class="alert alert-success">{{ message }}</div>
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
@@ -84,7 +85,7 @@ onMounted(charger)
             <td>{{ formatDate(o.datePublication) }}</td>
             <td>{{ formatDate(o.dateLimiteCandidature) }}</td>
             <td>
-              <span class="badge" :class="badge(o.etat)">{{ o.etat }}</span>
+              <Statut type="offre" :valeur="o.etat" />
               <div v-if="o.motifCloture" class="small text-muted">{{ MOTIFS[o.motifCloture] ?? o.motifCloture }}</div>
             </td>
             <td class="text-end text-nowrap">
