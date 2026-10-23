@@ -57,7 +57,7 @@ const routes = [
   { path: '/contrats/demandes', name: 'demandes-contrat', component: v('contrat/DemandesContrat'), meta: { roles: ['RH', 'DG', 'Finance', 'ADMIN', 'Manager'] } },
   { path: '/contrats/demandes/:id(\\d+)', name: 'demande-contrat-fiche', component: v('contrat/DemandeContratFiche'), props: true },
   { path: '/mon-contrat', name: 'mon-contrat', component: v('contrat/MonContrat') },
-  { path: '/contrats/:id(\\d+)', name: 'contrat-fiche', component: v('contrat/ContratFiche'), props: true, meta: { roles: RH } },
+  { path: '/contrats/:id(\\d+)', name: 'contrat-fiche', component: v('contrat/ContratFiche'), props: true, meta: { roles: ['RH', 'DG'] } },
   { path: '/onboarding', name: 'onboarding', component: v('onboarding/OnboardingListe'), meta: { roles: ['RH', 'DG', 'ADMIN', 'Manager'] } },
   { path: '/onboarding/:id(\\d+)', name: 'onboarding-fiche', component: v('onboarding/OnboardingFiche'), props: true },
 
