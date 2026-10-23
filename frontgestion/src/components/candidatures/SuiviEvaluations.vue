@@ -59,7 +59,7 @@ function enregistre(dossier) {
               Saisir le résultat
             </button>
             <span v-else-if="e.statut === 'A_FAIRE'" class="small text-muted">
-              {{ e.idPosteResponsable ? `Résultat saisi par : ${e.posteResponsable}` : 'À planifier avant la saisie' }}
+              {{ e.idPosteResponsable ? `Résultat saisi par : ${e.posteResponsable}` : 'Poste responsable à choisir en planifiant' }}
             </span>
           </div>
         </div>

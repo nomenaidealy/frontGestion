@@ -12,6 +12,7 @@ const route = useRoute()
 const router = useRouter()
 
 const offres = ref([])
+const postes = ref([])
 const groupe = ref(null)        // { idOffreEmploi, personnalises, niveaux }
 const idOffre = ref(route.query.offre ? String(route.query.offre) : '') // '' = niveaux communs
 const nonConnecte = ref(false)
@@ -50,6 +51,7 @@ watch(idOffre, (v) => {
 onMounted(async () => {
   try {
     offres.value = await candidaturesRhApi.offres()
+    postes.value = await selectionApi.postes()
   } catch (e) {
     if (e instanceof NonConnecteError) { nonConnecte.value = true; return }
   }
@@ -59,7 +61,7 @@ onMounted(async () => {
 
 <template>
   <div class="container" style="max-width: 900px">
-    <PageHeader titre="Niveaux de sélection" sous-titre="Tests et entretiens que passe chaque candidature présélectionnée, dans l'ordre. Le score minimum est sur 20 ; sans minimum, l'évaluateur décide lui-même." retour="/candidatures" retour-libelle="Candidatures" />
+    <PageHeader titre="Niveaux de sélection" sous-titre="Tests et entretiens que passe chaque candidature présélectionnée, dans l'ordre. Le score minimum est sur 20 ; sans minimum, l'évaluateur décide lui-même. Le poste responsable de chaque niveau peut être désigné automatiquement à partir du poste à pourvoir de l'offre." retour="/candidatures" retour-libelle="Candidatures" />
 
     <AlerteConnexion v-if="nonConnecte" />
     <template v-else>
@@ -93,7 +95,7 @@ onMounted(async () => {
 
         <!-- Pour une offre sans niveaux propres, on montre les niveaux communs sans les modifier ici -->
         <TableNiveaux :niveaux="groupe.niveaux" :id-offre="idOffre ? Number(idOffre) : null"
-                      :modifiable="!idOffre || groupe.personnalises" @change="charger" />
+                      :modifiable="!idOffre || groupe.personnalises" :postes="postes" @change="charger" />
       </template>
     </template>
   </div>

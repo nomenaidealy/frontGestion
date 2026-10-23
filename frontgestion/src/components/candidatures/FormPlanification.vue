@@ -60,6 +60,9 @@ async function enregistrer() {
           <option v-for="p in postes" :key="p.id" :value="p.id">{{ p.libelle }} — {{ p.unite }}</option>
         </select>
         <div class="invalid-feedback">{{ erreurs.idPosteResponsable }}</div>
+        <div v-if="evaluation.idPosteResponsable && Number(form.idPosteResponsable) === evaluation.idPosteResponsable" class="form-text">
+          Désigné d'après le niveau et le poste à pourvoir ; vous pouvez en choisir un autre.
+        </div>
       </div>
       <div class="col-md-4">
         <label :for="`${pre}-libelle`" class="form-label small mb-1">Précision</label>
