@@ -1,4 +1,5 @@
 <script setup>
+import PageHeader from '@/components/ui/PageHeader.vue'
 // P4 – Besoins dont le recrutement est ouvert (en attendant le bouton « Ouvrir Recrutement » de P3)
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
@@ -23,10 +24,7 @@ onMounted(async () => {
 
 <template>
   <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h4 class="m-0">Besoins dont le recrutement est ouvert</h4>
-      <RouterLink to="/offres" class="btn btn-outline-secondary btn-sm">Voir les offres</RouterLink>
-    </div>
+    <PageHeader titre="Besoins à publier" sous-titre="Besoins validés dont le recrutement est ouvert : choisissez celui pour lequel créer l'offre." retour="/offres" retour-libelle="Offres d'emploi" />
 
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
 

@@ -77,14 +77,14 @@ const reponse = (c) => (c.accepte === true ? ['Acceptée', 'text-success'] : c.a
 
 <template>
   <div class="container" style="max-width: 1000px">
-    <RouterLink to="/propositions" class="small">← Propositions</RouterLink>
+    <RouterLink to="/propositions" class="back-link">← Propositions</RouterLink>
     <div v-if="message" class="alert alert-success mt-2">{{ message }}</div>
     <div v-if="erreur" class="alert alert-danger mt-2">{{ erreur }}</div>
 
     <template v-if="p">
       <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mt-2 mb-3">
         <div>
-          <h4 class="mb-1">Proposition #{{ p.id }} — {{ p.nom }} {{ p.prenom }}</h4>
+          <h1 class="mb-1">Proposition #{{ p.id }} — {{ p.nom }} {{ p.prenom }}</h1>
           <div class="text-muted small">
             {{ p.email }} · {{ p.telephone }} · offre {{ p.referenceOffre }} ·
             {{ p.siege?.codePoste }} {{ p.siege?.poste }} ({{ p.siege?.unite }})

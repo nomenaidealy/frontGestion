@@ -65,7 +65,7 @@ const couleur = { ACCEPTEE: 'alert-success', REFUSEE: 'alert-secondary', EXPIREE
     <div v-if="!p && !erreur" class="text-muted">Chargement…</div>
 
     <template v-if="p">
-      <h4 class="mb-1">Proposition d'embauche</h4>
+      <h1 class="mb-1">Votre proposition d'embauche</h1>
       <p class="text-muted">
         {{ p.prenom }} {{ p.nom }} — poste <strong>{{ p.poste }}</strong> ({{ p.unite }}), offre {{ p.referenceOffre }}
       </p>

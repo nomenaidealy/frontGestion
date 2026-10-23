@@ -1,4 +1,5 @@
 <script setup>
+import PageHeader from '@/components/ui/PageHeader.vue'
 // P4 – Formulaire de création d'une offre d'emploi
 // Arrivée : /offres/nouvelle?idBesoin=ID (bouton « Ouvrir Recrutement » de P3, ou page des besoins)
 import { ref, onMounted } from 'vue'
@@ -58,7 +59,7 @@ async function apercu() {
 
 <template>
   <div class="container" style="max-width: 900px">
-    <h4 class="mb-3">Nouvelle offre d'emploi</h4>
+    <PageHeader titre="Nouvelle offre d'emploi" sous-titre="L'offre est générée en PDF à partir du modèle commun ; publiez-la pour qu'elle apparaisse sur le site carrières." retour="/offres/besoins" retour-libelle="Besoins à publier" />
 
     <div v-if="error" class="alert alert-danger">{{ error }}</div>
     <div v-if="!form" class="text-muted">Chargement…</div>

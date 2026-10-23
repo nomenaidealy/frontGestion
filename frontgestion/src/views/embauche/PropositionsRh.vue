@@ -1,4 +1,5 @@
 <script setup>
+import PageHeader from '@/components/ui/PageHeader.vue'
 // P4 – Propositions d'embauche (RH) : candidats retenus à qui proposer, et suivi des propositions envoyées
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
@@ -47,8 +48,7 @@ const etape = (e) => ETAPES_PROPOSITION[e] ?? { libelle: e, classe: 'bg-secondar
 
 <template>
   <div class="container" style="max-width: 1200px">
-    <h4 class="mb-1">Propositions d'embauche</h4>
-    <p class="text-muted">Proposez un poste aux candidats retenus par la sélection, puis suivez leurs réponses.</p>
+    <PageHeader titre="Propositions d'embauche" sous-titre="Proposez un poste aux candidats retenus par la sélection, puis suivez leurs réponses." />
 
     <div v-if="message" class="alert alert-success">{{ message }}</div>
     <div v-if="erreur" class="alert alert-danger">{{ erreur }}</div>
@@ -104,7 +104,7 @@ const etape = (e) => ETAPES_PROPOSITION[e] ?? { libelle: e, classe: 'bg-secondar
             <tr v-for="p in listeFiltree" :key="p.id">
               <td><strong>{{ p.nom }} {{ p.prenom }}</strong><div class="small text-muted">{{ p.email }}</div></td>
               <td>{{ p.referenceOffre }}<div class="small text-muted">{{ p.poste }}</div></td>
-              <td>{{ montant(p.salaire) }} Ar</td>
+              <td class="nowrap">{{ p.salaire ?? '—' }}</td>
               <td>{{ formatDate(p.dateEnvoi?.slice(0, 10)) }}</td>
               <td>{{ formatDate(p.dateLimiteReponse) }}</td>
               <td>

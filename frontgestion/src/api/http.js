@@ -22,7 +22,8 @@ async function request(method, url, body, { asText = false } = {}) {
 
   // Non connecté : l'AuthInterceptor du back redirige vers la page de login HTML
   if (res.redirected && res.url.includes('/auth/login')) throw new NonConnecteError()
-  if (res.status === 401) throw new NonConnecteError()
+  // 401 sur /auth/* (mauvais mot de passe, compte non validé) : on garde le message du back
+  if (res.status === 401 && !url.startsWith('/auth/')) throw new NonConnecteError()
 
   if (!res.ok) {
     let message = `Erreur ${res.status}`

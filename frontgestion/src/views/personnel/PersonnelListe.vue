@@ -1,55 +1,62 @@
 <script setup>
-// P3 – Liste du personnel en poste, avec recherche
-import { ref, onMounted, watch } from 'vue'
-import { employesApi } from '@/api/employes'
-import { formatDate } from '@/views/offres/format'
+import { onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { personnelApi } from '@/api/personnel'
+import { reportingApi } from '@/api/reporting'
+import { useAuth } from '@/composables/useAuth'
+import { dateFr } from '@/utils/format'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import Vide from '@/components/ui/Vide.vue'
+import Chargement from '@/components/ui/Chargement.vue'
+import Icon from '@/components/ui/Icon.vue'
 
-const employes = ref([])
+const router = useRouter()
+const { a } = useAuth()
+const portee = ref('en-poste')
 const q = ref('')
-const erreur = ref(null)
-const chargement = ref(true)
-let minuterie = null
+const liste = ref(null)
 
 async function charger() {
-  chargement.value = true
-  try {
-    employes.value = await employesApi.liste(q.value.trim())
-    erreur.value = null
-  } catch (e) {
-    erreur.value = e.message
-  } finally {
-    chargement.value = false
-  }
+  liste.value = null
+  liste.value = portee.value === 'tous' ? await personnelApi.tous(q.value) : await personnelApi.enPoste(q.value)
 }
+let minuteur
+watch(portee, charger)
+watch(q, () => { clearTimeout(minuteur); minuteur = setTimeout(charger, 300) })
 onMounted(charger)
-watch(q, () => { clearTimeout(minuterie); minuterie = setTimeout(charger, 300) })
 </script>
 
 <template>
-  <div class="container" style="max-width: 1100px">
-    <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
-      <div>
-        <h4 class="mb-1">Personnel</h4>
-        <p class="text-muted mb-0">{{ employes.length }} employé(s) en poste</p>
-      </div>
-      <input v-model="q" type="search" class="form-control" style="max-width: 320px" placeholder="Nom, prénom ou matricule" aria-label="Rechercher">
+  <PageHeader titre="Employés" sous-titre="Le personnel, son poste et son dossier (contrats, onboarding, coordonnées bancaires).">
+    <a :href="reportingApi.urlExport('personnel')" class="btn btn-light"><Icon name="download" /> Exporter</a>
+    <RouterLink v-if="a('RH')" to="/personnel/nouveau" class="btn btn-primary"><Icon name="plus" /> Saisir un employé</RouterLink>
+  </PageHeader>
+
+  <div class="filters">
+    <div class="segment">
+      <button type="button" :class="{ on: portee === 'en-poste' }" @click="portee = 'en-poste'">En poste</button>
+      <button type="button" :class="{ on: portee === 'tous' }" @click="portee = 'tous'">Tout le personnel</button>
     </div>
-    <div v-if="erreur" class="alert alert-danger">{{ erreur }}</div>
-    <div class="card shadow-sm">
-      <table class="table table-hover align-middle mb-0">
-        <thead class="table-light"><tr><th>Matricule</th><th>Nom</th><th>Poste</th><th>Unité</th><th>En poste depuis</th></tr></thead>
+    <input v-model="q" type="search" class="form-control form-control-sm search" placeholder="Nom, prénom ou matricule…" aria-label="Rechercher">
+  </div>
+
+  <section class="panel">
+    <Chargement v-if="liste === null" />
+    <Vide v-else-if="!liste.length" titre="Aucun employé trouvé" :texte="q ? 'Vérifiez l\'orthographe ou le matricule.' : ''" />
+    <div v-else class="table-responsive">
+      <table class="table align-middle">
+        <thead><tr><th>Employé</th><th>Matricule</th><th>Poste</th><th>Unité</th><th>Depuis</th></tr></thead>
         <tbody>
-          <tr v-if="chargement && !employes.length"><td colspan="5" class="text-center text-muted py-3">Chargement…</td></tr>
-          <tr v-else-if="!employes.length"><td colspan="5" class="text-center text-muted py-3">Aucun employé trouvé.</td></tr>
-          <tr v-for="e in employes" :key="e.id" style="cursor: pointer" @click="$router.push({ name: 'employe-fiche', params: { id: e.id } })">
-            <td class="font-monospace small">{{ e.matricule }}</td>
-            <td><RouterLink :to="{ name: 'employe-fiche', params: { id: e.id } }" @click.stop>{{ e.nom }} {{ e.prenoms }}</RouterLink></td>
+          <tr v-for="e in liste" :key="e.id" class="cliquable" @click="router.push(`/personnel/${e.id}`)">
+            <td class="cell-main">{{ e.nom }} {{ e.prenoms }}</td>
+            <td>{{ e.matricule }}</td>
             <td>{{ e.poste }}</td>
             <td>{{ e.unite }}</td>
-            <td>{{ formatDate(e.dateEntree) }}</td>
+            <td class="nowrap">{{ dateFr(e.dateEntree) }}</td>
           </tr>
         </tbody>
       </table>
     </div>
-  </div>
+    <div v-if="liste?.length" class="panel-foot" style="justify-content:flex-start"><span class="small muted">{{ liste.length }} employé(s)</span></div>
+  </section>
 </template>

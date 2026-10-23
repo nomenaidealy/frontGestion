@@ -1,4 +1,5 @@
 <script setup>
+import PageHeader from '@/components/ui/PageHeader.vue'
 // P4 – Nouvelle proposition d'embauche pour un candidat retenu
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -58,9 +59,7 @@ const invalide = (c) => (champs.value[c] ? 'is-invalid' : '')
 
 <template>
   <div class="container" style="max-width: 900px">
-    <RouterLink to="/propositions" class="small">← Propositions</RouterLink>
-    <h4 class="mt-2 mb-1">Nouvelle proposition d'embauche</h4>
-    <p v-if="f" class="text-muted">{{ f.nom }} {{ f.prenom }} · {{ f.email }} · offre {{ f.referenceOffre }}</p>
+    <PageHeader titre="Nouvelle proposition d'embauche" :sous-titre="f ? `${f.nom} ${f.prenom ?? ''} — ${f.email}, offre ${f.referenceOffre}` : ''" retour="/propositions" retour-libelle="Propositions" />
 
     <div v-if="erreur" class="alert alert-danger">{{ erreur }}</div>
     <div v-if="!f && !erreur" class="text-muted">Chargement…</div>

@@ -1,4 +1,5 @@
 <script setup>
+import PageHeader from '@/components/ui/PageHeader.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NonConnecteError } from '@/api/http'
@@ -58,12 +59,7 @@ onMounted(async () => {
 
 <template>
   <div class="container" style="max-width: 900px">
-    <RouterLink :to="{ name: 'candidatures' }" class="d-inline-block mb-3">← Candidatures reçues</RouterLink>
-    <h4 class="mb-1">Niveaux de sélection</h4>
-    <p class="text-muted">
-      Tests et entretiens que passe chaque candidature présélectionnée, dans l'ordre. Le score minimum est sur 20 ;
-      sans minimum, l'évaluateur décide lui-même.
-    </p>
+    <PageHeader titre="Niveaux de sélection" sous-titre="Tests et entretiens que passe chaque candidature présélectionnée, dans l'ordre. Le score minimum est sur 20 ; sans minimum, l'évaluateur décide lui-même." retour="/candidatures" retour-libelle="Candidatures" />
 
     <AlerteConnexion v-if="nonConnecte" />
     <template v-else>

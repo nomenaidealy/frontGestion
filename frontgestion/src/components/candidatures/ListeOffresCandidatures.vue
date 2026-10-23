@@ -1,4 +1,5 @@
 <script setup>
+import Statut from '@/components/ui/Statut.vue'
 import { pluriel } from './candidat'
 
 defineProps({
@@ -17,7 +18,7 @@ const classeEtat = (etat) => (etat === 'PUBLIEE' ? 'bg-success' : etat === 'BROU
             @click="emit('choisir', o.id)">
       <div class="d-flex justify-content-between align-items-center">
         <strong class="small">{{ o.reference }}</strong>
-        <span class="badge" :class="classeEtat(o.etat)">{{ o.etat }}</span>
+        <Statut type="offre" :valeur="o.etat" />
       </div>
       <div>{{ o.postes || 'Poste à pourvoir' }}</div>
       <div class="small" :class="o.id === selection ? '' : 'text-muted'">
