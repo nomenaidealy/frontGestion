@@ -17,6 +17,8 @@ export const selectionApi = {
 Object.assign(selectionApi, {
   /** Postes actifs, proposés comme responsables d'une évaluation. */
   postes: () => http.get('/api/rh/selection/postes'),
+  /** Postes au nom desquels l'utilisateur peut saisir un résultat (occupés ou délégués) */
+  mesPostes: () => http.get('/api/selection/mes-postes'),
   /** { datePrevue, idPosteResponsable, libelle } */
   planifier: (idEvaluation, planification) =>
     http.put(`/api/rh/evaluations/${id(idEvaluation)}/planification`, planification),

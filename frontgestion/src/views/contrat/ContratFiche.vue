@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { contratsApi } from '@/api/contrats'
 import { useToast } from '@/composables/useToast'
@@ -10,22 +10,27 @@ import Rail from '@/components/ui/Rail.vue'
 import Modal from '@/components/ui/Modal.vue'
 import Chargement from '@/components/ui/Chargement.vue'
 import Icon from '@/components/ui/Icon.vue'
+import DemandeContratForm from '@/components/contrat/DemandeContratForm.vue'
+import { demandesContratApi } from '@/api/demandesContrat'
 
 const props = defineProps({ id: { type: [String, Number], required: true } })
 const router = useRouter()
 const toast = useToast()
 const c = ref(null)
-const types = ref([])
 const fichier = ref(null)
 const enCours = ref(false)
-const dialogue = ref(null)        // annuler | renouveler
-const renouv = reactive({ idTypeNouveau: '', dateFinPrevue: '' })
+const dialogue = ref(null)        // annuler | demande
 const erreur = ref('')
 
-async function charger() { c.value = await contratsApi.fiche(props.id) }
+const demandeContrat = ref(null)
+async function charger() {
+  c.value = await contratsApi.fiche(props.id)
+  demandeContrat.value = null
+  try { demandeContrat.value = (await demandesContratApi.contrats()).find((x) => x.idContrat === c.value.id) || null } catch { /* sans formulaire */ }
+}
+function demandeCreee(d) { dialogue.value = null; toast.ok('Demande enregistrée'); router.push(`/contrats/demandes/${d.id}`) }
 onMounted(async () => {
   await charger()
-  try { types.value = await contratsApi.types() } catch { /* même type seulement */ }
 })
 watch(() => props.id, charger)
 
@@ -67,13 +72,6 @@ async function deposer() {
   if (!fichier.value) { erreur.value = 'Choisissez le PDF signé.'; return }
   if (await agir(() => contratsApi.deposer(props.id, fichier.value), 'Copie signée déposée')) { fichier.value = null; charger() }
 }
-async function renouveler() {
-  const n = await agir(() => contratsApi.renouveler(props.id, {
-    idTypeNouveau: renouv.idTypeNouveau ? Number(renouv.idTypeNouveau) : null,
-    dateFinPrevue: renouv.dateFinPrevue || null,
-  }), 'Nouveau contrat créé')
-  if (n) { dialogue.value = null; router.push(`/contrats/${n.id}`) }
-}
 </script>
 
 <template>
@@ -87,7 +85,7 @@ async function renouveler() {
         <Icon name="file" /> {{ c.documentSigne ? 'Copie signée' : 'Contrat à imprimer' }}
       </a>
       <button v-if="c.statut === 'CREE'" type="button" class="btn btn-primary" :disabled="enCours" @click="valider">Valider le contrat</button>
-      <button v-if="c.statut === 'SIGNE'" type="button" class="btn btn-primary" @click="dialogue = 'renouveler'">Renouveler ou changer de type</button>
+      <button v-if="c.statut === 'SIGNE'" type="button" class="btn btn-primary" @click="dialogue = 'demande'">Proposer un renouvellement ou un avenant</button>
       <button v-if="['CREE', 'VALIDE'].includes(c.statut)" type="button" class="btn btn-outline-danger" @click="dialogue = 'annuler'">Annuler</button>
     </PageHeader>
 
@@ -129,32 +127,12 @@ async function renouveler() {
       </div>
     </section>
 
+    <DemandeContratForm v-if="dialogue === 'demande'" :contrat="demandeContrat" titre="Proposer un renouvellement ou un avenant" @fermer="dialogue = null" @creee="demandeCreee" />
     <Modal v-if="dialogue === 'annuler'" titre="Annuler ce contrat ?" @fermer="dialogue = null">
       <p>Le contrat ne pourra plus être signé. L'historique est conservé.</p>
       <template #pied>
         <button type="button" class="btn btn-light" @click="dialogue = null">Garder le contrat</button>
         <button type="button" class="btn btn-danger" @click="annuler">Annuler le contrat</button>
-      </template>
-    </Modal>
-    <Modal v-if="dialogue === 'renouveler'" titre="Renouveler ou changer de type" @fermer="dialogue = null">
-      <p class="small muted">Un nouveau contrat est créé à la suite de celui-ci, qui passe « terminé » sans perdre son historique. Les limites de durée et de renouvellement du type sont contrôlées.</p>
-      <div class="form-grid">
-        <div>
-          <label class="form-label" for="rt">Type du nouveau contrat</label>
-          <select id="rt" v-model="renouv.idTypeNouveau" class="form-select">
-            <option value="">Même type ({{ c.type }})</option>
-            <option v-for="t in types" :key="t.id" :value="t.id">{{ t.libelle }}</option>
-          </select>
-        </div>
-        <div>
-          <label class="form-label" for="rf">Date de fin prévue</label>
-          <input id="rf" v-model="renouv.dateFinPrevue" type="date" class="form-control">
-          <span class="form-text">Laissez vide pour un CDI.</span>
-        </div>
-      </div>
-      <template #pied>
-        <button type="button" class="btn btn-light" @click="dialogue = null">Annuler</button>
-        <button type="button" class="btn btn-primary" :disabled="enCours" @click="renouveler">Créer le contrat</button>
       </template>
     </Modal>
   </template>

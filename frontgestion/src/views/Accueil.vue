@@ -30,6 +30,8 @@ const aFaire = computed(() => {
     { n: acc.value.tachesOnboarding, texte: "tâche(s) d'onboarding vous sont confiées", to: '/mes-taches', icone: 'clipboard' },
     { n: acc.value.evaluationsAVenir, texte: 'évaluation(s) de candidats à mener', to: '/mes-evaluations', icone: 'calendar' },
     { n: acc.value.inscriptionsAValider, texte: 'inscription(s) à valider', to: { path: '/admin/utilisateurs', query: { statut: 'EN_ATTENTE' } }, icone: 'key' },
+    { n: acc.value.postesAValider, texte: 'création(s) de poste à valider', to: { path: '/postes', query: { etat: 'PROPOSE' } }, icone: 'briefcase' },
+    { n: acc.value.demandesContratATraiter, texte: 'demande(s) de contrat à traiter', to: { path: '/contrats/demandes', query: { vue: 'a-traiter' } }, icone: 'file' },
     { n: acc.value.budgetsAValider, texte: 'proposition(s) de budget à valider', to: '/finance/budgets', icone: 'wallet' },
     { n: acc.value.grillesAValider, texte: 'grille salariale à valider', to: '/finance/grille', icone: 'list' },
     { n: acc.value.mesBesoinsEnCours, texte: 'de vos besoins sont en cours', to: { path: '/besoins', query: { vue: 'mes-demandes' } }, icone: 'list' },

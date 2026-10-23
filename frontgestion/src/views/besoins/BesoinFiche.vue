@@ -42,7 +42,8 @@ const etapes = computed(() => (b.value?.circuit || []).map((e) => ({
 const ecart = computed(() => {
   const x = b.value?.budget
   if (!x?.budgetUnite || !x?.coutAnnuel) return null
-  return Math.min(100, Math.round((x.coutAnnuel / x.budgetUnite) * 100))
+  if (!(x.disponible > 0)) return 100
+  return Math.min(100, Math.round((x.coutAnnuel / x.disponible) * 100))
 })
 
 function ouvrir(type) {
@@ -86,7 +87,12 @@ async function confirmer() {
       </template>
       <button v-if="b.actions.refuser" type="button" class="btn btn-outline-danger" @click="ouvrir('refuser')">Refuser</button>
       <button v-if="b.actions.valider" type="button" class="btn btn-primary" @click="ouvrir('valider')"><Icon name="check" /> Valider</button>
-      <RouterLink v-if="b.actions.creerOffre" :to="{ path: '/offres/nouvelle', query: { idBesoin: b.id } }" class="btn btn-primary">Créer l'offre d'emploi</RouterLink>
+      <RouterLink v-if="b.actions.creerOffre" class="btn btn-primary"
+                  :to="b.actions.postesSansOffre.length === 1
+                    ? { path: '/offres/nouvelle', query: { idBesoin: b.id, idPoste: b.actions.postesSansOffre[0] } }
+                    : '/offres/besoins'">
+        {{ b.actions.postesSansOffre.length > 1 ? `Créer les offres d'emploi (${b.actions.postesSansOffre.length} postes)` : "Créer l'offre d'emploi" }}
+      </RouterLink>
       <button v-if="b.actions.annuler" type="button" class="btn btn-light" @click="ouvrir('annuler')">Annuler la demande</button>
     </PageHeader>
 
@@ -144,7 +150,7 @@ async function confirmer() {
           <div class="list-group list-group-flush">
             <RouterLink v-for="o in b.offres" :key="o.id" :to="{ path: '/candidatures', query: { offre: o.id } }"
                         class="list-group-item list-group-item-action d-flex justify-content-between align-items-center text-decoration-none">
-              <span><b>{{ o.reference }}</b> <span class="muted small">publiée le {{ dateFr(o.datePublication) }}, candidatures jusqu'au {{ dateFr(o.dateLimite) }}</span></span>
+              <span><b>{{ o.reference }}</b><template v-if="o.poste"> · {{ o.poste }}</template> <span class="muted small">publiée le {{ dateFr(o.datePublication) }}, candidatures jusqu'au {{ dateFr(o.dateLimite) }}</span></span>
               <Statut type="offre" :valeur="o.etat" />
             </RouterLink>
           </div>
@@ -157,12 +163,17 @@ async function confirmer() {
           <div class="panel-body">
             <dl class="facts" style="grid-template-columns:1fr">
               <div><dt>Coût annuel estimé</dt><dd style="font-size:1.25rem">{{ ariary(b.budget.coutAnnuel) }}</dd></div>
-              <div><dt>Budget de l'unité</dt><dd>{{ b.budget.budgetUnite ? ariary(b.budget.budgetUnite) : 'Aucun budget saisi' }}</dd></div>
+              <div><dt>Budget de l'unité</dt><dd>{{ b.budget.budgetUnite ? ariary(b.budget.budgetUnite) : 'Aucun budget validé' }}</dd></div>
+              <template v-if="b.budget.budgetUnite">
+                <div><dt>Masse salariale annuelle</dt><dd>− {{ ariary(b.budget.masseSalariale) }}</dd></div>
+                <div><dt>Autres besoins en cours</dt><dd>− {{ ariary(b.budget.autresBesoins) }}</dd></div>
+                <div><dt>Disponible pour ce besoin</dt><dd :class="b.budget.disponible < 0 ? 'text-danger fw-semibold' : 'fw-semibold'">{{ ariary(b.budget.disponible) }}</dd></div>
+              </template>
             </dl>
             <template v-if="ecart !== null">
               <div class="progress-line mt-3"><span :style="{ width: `${ecart}%`, background: b.budget.dansLeBudget ? '' : 'var(--sirh-danger)' }"></span></div>
               <p class="small mt-2 mb-0" :class="b.budget.dansLeBudget ? 'text-success' : 'text-danger'">
-                {{ b.budget.dansLeBudget ? 'Le besoin tient dans le budget de l\'unité.'
+                {{ b.budget.dansLeBudget ? 'Le besoin tient dans le disponible de l\'unité.'
                   : b.etat === 'EN_ATTENTE' ? 'Le besoin dépasse le budget : la Finance décide.' : 'Dépassement du budget soumis à la décision de la Finance.' }}
               </p>
             </template>

@@ -8,6 +8,8 @@ export const propositionsApi = {
   retenues: () => http.get('/api/rh/candidatures-retenues'),           // candidats retenus par la sélection (P5)
   formulaire: (idCandidature) => http.get(`${BASE}/formulaire?idCandidature=${encodeURIComponent(idCandidature)}`),
   creer: (req) => http.post(BASE, req),
+  /** Fourchette de la grille validée pour un poste à une date : { min, max, categorie, echelon } */
+  fourchette: (idPoste, date) => http.get(`${BASE}/fourchette?idPoste=${encodeURIComponent(idPoste)}${date ? `&date=${date}` : ''}`),
   fiche: (id) => http.get(`${BASE}/${id}`),
   contreProposer: (id, req) => http.post(`${BASE}/${id}/contre-proposition`, req),
   retirer: (id, commentaire) => http.post(`${BASE}/${id}/retrait`, { commentaire }),

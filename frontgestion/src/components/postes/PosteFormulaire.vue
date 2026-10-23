@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import { besoinsApi } from '@/api/besoins'
 import { referentielsApi } from '@/api/referentiels'
 
@@ -11,10 +11,16 @@ const listes = reactive({ metiers: [], echelons: [], unites: [], superieurs: [] 
 const pret = ref(false)
 onMounted(async () => {
   const [m, e, u, s] = await Promise.all([
-    referentielsApi.lister('metiers'), besoinsApi.echelons(), besoinsApi.unites(), besoinsApi.superieurs(),
+    referentielsApi.lister('metiers'), besoinsApi.echelons(), besoinsApi.unites(), besoinsApi.superieurs(modele.value.idUniteOrga),
   ])
   Object.assign(listes, { metiers: m, echelons: e, unites: u, superieurs: s })
   pret.value = true
+})
+// supérieur direct : un poste de l'unité ou d'une unité dont elle dépend
+watch(() => modele.value.idUniteOrga, async (id, avant) => {
+  if (!pret.value || id === avant) return
+  listes.superieurs = await besoinsApi.superieurs(id)
+  if (!listes.superieurs.some((x) => x.id === modele.value.idSuperieurDirect)) modele.value.idSuperieurDirect = null
 })
 </script>
 

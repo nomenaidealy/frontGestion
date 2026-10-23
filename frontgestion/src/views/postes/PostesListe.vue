@@ -59,8 +59,8 @@ async function creer() {
 
 <template>
   <PageHeader titre="Postes" sous-titre="Les postes de l'organisation, leur occupant et leur état.">
-    <RouterLink v-if="!a('ADMIN', 'RH')" to="/postes/demande" class="btn btn-light">Demander un poste</RouterLink>
-    <button v-if="a('ADMIN', 'RH')" type="button" class="btn btn-primary" @click="nouveau"><Icon name="plus" /> Créer un poste</button>
+    <RouterLink v-if="a('Manager', 'RH')" to="/postes/demande" class="btn btn-light">Demander un poste</RouterLink>
+    <button v-if="a('DG')" type="button" class="btn btn-primary" @click="nouveau"><Icon name="plus" /> Créer un poste</button>
   </PageHeader>
 
   <div class="filters">

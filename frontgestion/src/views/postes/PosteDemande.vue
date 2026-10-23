@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { besoinsApi } from '@/api/besoins'
 import { organisationApi } from '@/api/organisation'
@@ -14,8 +14,15 @@ const form = reactive({ libelle: '', idMetier: null, nouveauMetierLibelle: '', i
 const erreur = ref('')
 
 onMounted(async () => {
-  const [m, c, e, u, s] = await Promise.all([besoinsApi.metiers(), besoinsApi.categories(), besoinsApi.echelons(), besoinsApi.unites(), besoinsApi.superieurs()])
-  Object.assign(listes, { metiers: m, categories: c, echelons: e, unites: u, superieurs: s })
+  const [m, c, e, u] = await Promise.all([besoinsApi.metiers(), besoinsApi.categories(), besoinsApi.echelons(), organisationApi.unitesDemandables()])
+  Object.assign(listes, { metiers: m, categories: c, echelons: e, unites: u })
+  if (u.length === 1) form.idUniteOrga = u[0].id
+})
+
+// supérieur direct : un poste de l'unité ou d'une unité dont elle dépend
+watch(() => form.idUniteOrga, async (id) => {
+  form.idSuperieurDirect = null
+  listes.superieurs = id ? await besoinsApi.superieurs(id) : []
 })
 
 async function envoyer() {
@@ -68,7 +75,7 @@ async function envoyer() {
         <label class="form-label" for="uni">Unité</label>
         <select id="uni" v-model="form.idUniteOrga" class="form-select">
           <option :value="null" disabled>Choisir…</option>
-          <option v-for="u in listes.unites" :key="u.id" :value="u.id">{{ u.libelle }}</option>
+          <option v-for="u in listes.unites" :key="u.id" :value="u.id">{{ u.libelle }}<template v-if="u.uniteMere"> — {{ u.uniteMere }}</template></option>
         </select>
       </div>
       <div class="full">

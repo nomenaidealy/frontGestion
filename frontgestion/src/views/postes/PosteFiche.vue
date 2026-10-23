@@ -53,7 +53,7 @@ async function decider(etat) {
         <button type="button" class="btn btn-outline-danger" @click="decider('REFUSE')">Refuser</button>
         <button type="button" class="btn btn-primary" @click="decider('ACTIF')">Valider le poste</button>
       </template>
-      <template v-if="a('ADMIN', 'RH') && (p.etat === 'ACTIF' || p.etat === 'PROPOSE')">
+      <template v-if="a('DG') && (p.etat === 'ACTIF' || p.etat === 'PROPOSE')">
         <button type="button" class="btn btn-light" @click="modifier">Modifier</button>
         <button v-if="p.etat === 'ACTIF'" type="button" class="btn btn-outline-danger" @click="confirmer = true">Supprimer</button>
       </template>

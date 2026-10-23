@@ -1,12 +1,16 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { organisationApi } from '@/api/organisation'
+import { useAuth } from '@/composables/useAuth'
 import { useToast } from '@/composables/useToast'
 import PageHeader from '@/components/ui/PageHeader.vue'
 import Rail from '@/components/ui/Rail.vue'
 import Chargement from '@/components/ui/Chargement.vue'
 import Modal from '@/components/ui/Modal.vue'
 import Icon from '@/components/ui/Icon.vue'
+
+const { a } = useAuth()
+const modifiable = a('DG')   // le circuit de validation est fixé par le DG
 
 const toast = useToast()
 const etapes = ref(null)
@@ -50,8 +54,9 @@ async function supprimer(e) {
 
 <template>
   <PageHeader titre="Circuit de validation des besoins" sous-titre="Les étapes qu'un besoin traverse avant l'ouverture du recrutement. Deux postes au même rang : l'un ou l'autre peut valider.">
-    <button type="button" class="btn btn-primary" @click="ouvrir(null)"><Icon name="plus" /> Ajouter une étape</button>
+    <button v-if="modifiable" type="button" class="btn btn-primary" @click="ouvrir(null)"><Icon name="plus" /> Ajouter une étape</button>
   </PageHeader>
+  <div v-if="!modifiable" class="alert alert-info">Consultation seule : le circuit de validation est fixé par le Directeur général.</div>
   <Chargement v-if="etapes === null" />
   <template v-else>
     <section class="panel">
@@ -68,8 +73,10 @@ async function supprimer(e) {
               <td>{{ e.occupant || 'Poste vacant' }}</td>
               <td><span v-if="e.controle === 'BUDGET'" class="status info">Budget : validation d'office si le coût tient dans le budget</span><span v-else class="muted">Décision manuelle</span></td>
               <td class="text-end nowrap">
-                <button type="button" class="btn btn-sm btn-light" @click="ouvrir(e)">Modifier</button>
-                <button type="button" class="btn btn-sm btn-link text-danger" @click="supprimer(e)">Retirer</button>
+                <template v-if="modifiable">
+                  <button type="button" class="btn btn-sm btn-light" @click="ouvrir(e)">Modifier</button>
+                  <button type="button" class="btn btn-sm btn-link text-danger" @click="supprimer(e)">Retirer</button>
+                </template>
               </td>
             </tr>
           </tbody>
