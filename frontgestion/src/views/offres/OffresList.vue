@@ -90,6 +90,7 @@ onMounted(charger)
             </td>
             <td class="text-end text-nowrap">
               <a v-if="o.pdfUrl" :href="o.pdfUrl" target="_blank" class="btn btn-outline-secondary btn-sm">PDF</a>
+              <a v-if="o.fichePdfUrl" :href="o.fichePdfUrl" target="_blank" class="btn btn-outline-secondary btn-sm ms-1">Fiche de poste</a>
               <button v-if="o.etat === 'BROUILLON'" class="btn btn-success btn-sm ms-1" @click="publier(o)">
                 Publier
               </button>

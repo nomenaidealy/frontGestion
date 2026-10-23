@@ -12,7 +12,6 @@ export const contratsApi = {
   valider: (id) => http.post(`${BASE}/${id}/valider`),
   signer: (id) => http.post(`${BASE}/${id}/signer`),
   annuler: (id) => http.post(`${BASE}/${id}/annuler`),
-  renouveler: (id, payload) => http.post(`${BASE}/${id}/renouveler`, nettoyer(payload)),
   deposer: (id, fichier) => {
     const fd = new FormData()
     fd.append('fichier', fichier)
